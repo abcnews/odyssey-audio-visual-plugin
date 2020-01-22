@@ -20,6 +20,10 @@ export default props => {
     // Add video players to our observer
     videos.forEach(video => {
       observer.observe(video);
+
+      // Set volume to zero so we can fade in
+      const videoEl = video.querySelector("video");
+      videoEl.volume = 0.0;
     });
   };
 
@@ -34,6 +38,7 @@ export default props => {
 
   // This is done when element observed
   const callback = (entries, observer) => {
+    console.log("callback!")
     entries.forEach(entry => {
       // Don't fire on load
       if (entry.intersectionRatio === 0) return;
