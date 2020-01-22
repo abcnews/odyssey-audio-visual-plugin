@@ -38,7 +38,6 @@ export default props => {
 
   // This is done when element observed
   const callback = (entries, observer) => {
-    console.log("callback!")
     entries.forEach(entry => {
       // Don't fire on load
       if (entry.intersectionRatio === 0) return;
@@ -47,16 +46,19 @@ export default props => {
         // Get the actual video element
         const entryVid = entry.target.querySelector("video");
 
+        // Play the video
+        entry.target.api.play();
+
         // If we're already fading out, then stop
         clearInterval(entryVid.fadeOutIntervalId);
 
+        // Fade in
         if (entryVid.volume < 1.0) {
           let vol = entryVid.volume;
           let interval = 200;
 
           entryVid.fadeInIntervalId = setInterval(function() {
             // Reduce volume as long as it is above 0
-
             if (vol < 1.0) {
               vol += 0.4;
               if (vol > 1.0) vol = 1.0;
@@ -67,30 +69,29 @@ export default props => {
             }
           }, interval);
         }
-
-        // Play the video
-        entry.target.api.play();
       } else {
         const entryVid = entry.target.querySelector("video");
 
         // If we're already fading in, then stop
         clearInterval(entryVid.fadeInIntervalId);
 
-        let vol = entryVid.volume;
-        let interval = 200;
+        if (entryVid.volume > 0.0) {
+          let vol = entryVid.volume;
+          let interval = 200;
 
-        entryVid.fadeOutIntervalId = setInterval(function() {
-          // Reduce volume as long as it is above 0
-          if (vol > 0) {
-            vol -= 0.1;
-            if (vol < 0.0) vol = 0.0;
-            entryVid.volume = vol.toFixed(2);
-          } else {
-            // Stop the setInterval when 0 is reached
-            entry.target.api.pause();
-            clearInterval(entryVid.fadeOutIntervalId);
-          }
-        }, interval);
+          entryVid.fadeOutIntervalId = setInterval(function() {
+            // Reduce volume as long as it is above 0
+            if (vol > 0) {
+              vol -= 0.1;
+              if (vol < 0.0) vol = 0.0;
+              entryVid.volume = vol.toFixed(2);
+            } else {
+              // Stop the setInterval when 0 is reached
+              entry.target.api.pause();
+              clearInterval(entryVid.fadeOutIntervalId);
+            }
+          }, interval);
+        }
       }
     });
   };
