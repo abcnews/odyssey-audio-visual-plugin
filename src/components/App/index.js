@@ -4,7 +4,7 @@ import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 
 export default props => {
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     console.log("mounted!!!");
@@ -12,15 +12,15 @@ export default props => {
 
   return (
     <div className={styles.root}>
-      <div className={`${styles.icon}  ${isMuted && styles.hidden}`}>
+      <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
         <img src={airpods} />
       </div>
 
-      <div className={`${styles.text} ${!isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${isMuted && styles.hidden}`}>
         KEEP SCROLLING TO READ THE STORY
       </div>
 
-      <div className={`${styles.text} ${isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${!isMuted && styles.hidden}`}>
         THIS STORY IS BEST EXPERIENCED WITH SOUND ON
       </div>
 
