@@ -4,25 +4,32 @@ import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 
 let videos;
+let freezeFrameVideos;
 
 export default props => {
   const [isMuted, _setIsMuted] = useState(true);
 
   const stateRef = useRef(isMuted);
 
+  // Used to access state in eventListeners
   const setIsMuted = data => {
     stateRef.current = data;
     _setIsMuted(data);
   };
 
-  const init = () => {};
-
-  const muteToggle = () => {
+  const muteToggle = event => {
     videos.forEach(video => {
       video.api.setMuted(!isMuted);
     });
 
     setIsMuted(!isMuted);
+
+    // Unmute freezeframe videos
+    freezeFrameVideos = document.querySelectorAll(".AC_W_aNL video");
+
+    freezeFrameVideos.forEach(video => {
+      video.muted = !isMuted;
+    });
 
     // videos.forEach(video => {
     //   if (video.api.isMuted()) video.api.setMuted(false);
@@ -90,8 +97,8 @@ export default props => {
     });
   };
 
+  // Init effect run on mount
   useEffect(() => {
-    // Init effect run on mount
     videos = document.querySelectorAll(".VideoPlayer");
 
     let observer = new IntersectionObserver(callback, {
@@ -122,12 +129,17 @@ export default props => {
           if (vid.api.isMuted()) vid.api.setMuted(false);
           else if (!vid.api.isMuted()) vid.api.setMuted(true);
         });
+
+        freezeFrameVideos.forEach(video => {
+          video.muted = !video.muted;
+        });
       };
 
       // Make "fake-ambient" videos support mute
       const videoMuteButton = video.querySelector(".VideoControls-mute");
 
-      videoMuteButton.addEventListener("click", eventListener);
+      videoMuteButton &&
+        videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
