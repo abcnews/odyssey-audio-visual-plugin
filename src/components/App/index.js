@@ -1,39 +1,33 @@
 import { h, Component } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useLayoutEffect, useRef } from "preact/hooks";
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 
 let videos;
 
 export default props => {
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, _setIsMuted] = useState(true);
 
-  const init = () => {
-    videos = document.querySelectorAll(".VideoPlayer");
+  const stateRef = useRef(isMuted);
 
-    let observer = new IntersectionObserver(callback, {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.6
-    });
-
-    // Add video players to our observer
-    videos.forEach(video => {
-      observer.observe(video);
-
-      // Set volume to zero so we can fade in
-      const videoEl = video.querySelector("video");
-      videoEl.volume = 0.0;
-    });
+  const setIsMuted = data => {
+    stateRef.current = data;
+    _setIsMuted(data);
   };
 
+  const init = () => {};
+
   const muteToggle = () => {
+    videos.forEach(video => {
+      video.api.setMuted(!isMuted);
+    });
+
     setIsMuted(!isMuted);
 
-    videos.forEach(video => {
-      if (video.api.isMuted()) video.api.setMuted(false);
-      else if (!video.api.isMuted()) video.api.setMuted(true);
-    });
+    // videos.forEach(video => {
+    //   if (video.api.isMuted()) video.api.setMuted(false);
+    //   else if (!video.api.isMuted()) video.api.setMuted(true);
+    // });
   };
 
   // This is done when element observed
@@ -97,7 +91,48 @@ export default props => {
   };
 
   useEffect(() => {
-    init();
+    // Init effect run on mount
+    videos = document.querySelectorAll(".VideoPlayer");
+
+    let observer = new IntersectionObserver(callback, {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.6
+    });
+
+    // Add video players to our observer
+    videos.forEach(video => {
+      observer.observe(video);
+
+      // Initially set videos to muted, in case not ambient
+      video.api.setMuted(isMuted);
+
+      // Set volume to zero so we can fade in
+      const videoEl = video.querySelector("video");
+      videoEl.volume = 0.0;
+
+      // Trick non-ambient videos into playing more
+      // than 1 video at a time
+      video.api.isAmbient = true;
+
+      const eventListener = () => {
+        setIsMuted(!stateRef.current);
+
+        videos.forEach(vid => {
+          if (vid.api.isMuted()) vid.api.setMuted(false);
+          else if (!vid.api.isMuted()) vid.api.setMuted(true);
+        });
+      };
+
+      // Make "fake-ambient" videos support mute
+      const videoMuteButton = video.querySelector(".VideoControls-mute");
+
+      videoMuteButton.addEventListener("click", eventListener);
+    });
+
+    return () => {
+      videoMuteButton.removeEventListener("click", eventListener);
+    };
   }, []);
 
   return (
