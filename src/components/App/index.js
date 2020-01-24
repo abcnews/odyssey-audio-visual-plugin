@@ -1,5 +1,5 @@
 import { h, Component } from "preact";
-import { useState, useEffect, useLayoutEffect, useRef } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { createPortal } from "preact/compat";
 
 import styles from "./styles.scss";
@@ -9,10 +9,13 @@ import unmute from "./unmute.svg";
 
 const OBSERVATION_RATIO = 0.6;
 
-const App = () => {
+const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
+  const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState();
   const [freezeFrameVideos, setFreezeFrameVideos] = useState();
+
+  const muteEl = useRef(null);
 
   // Used to access state in eventListeners
   const stateRef = useRef(isMuted);
@@ -35,11 +38,6 @@ const App = () => {
     freezeFrameVideos.forEach(video => {
       video.muted = !isMuted;
     });
-
-    // videos.forEach(video => {
-    //   if (video.api.isMuted()) video.api.setMuted(false);
-    //   else if (!video.api.isMuted()) video.api.setMuted(true);
-    // });
   };
 
   // This is done when element observed
@@ -114,12 +112,35 @@ const App = () => {
     setTimeout(() => {
       setFreezeFrameVideos(document.querySelectorAll(".AC_W_aNL video"));
     }, 1000);
+
+    // Showing and hiding the floating mute button
+    const buttonObserverCallback = (entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.intersectionRatio === 0) {
+          setShowButton(true);
+        } else {
+          setShowButton(false);
+        }
+      });
+    };
+
+    const buttonObserver = new IntersectionObserver(buttonObserverCallback, {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.0
+    });
+
+    buttonObserver.observe(muteEl.current);
+
+    return () => {
+      buttonObserver.unobserve(muteEl.current);
+    };
   }, []);
 
   useEffect(() => {
     if (typeof videos === "undefined") return;
 
-    let observer = new IntersectionObserver(observerCallback, {
+    const observer = new IntersectionObserver(observerCallback, {
       root: null,
       rootMargin: "0px",
       threshold: OBSERVATION_RATIO
@@ -168,12 +189,6 @@ const App = () => {
     };
   }, [videos]);
 
-  // useEffect(() => {
-  //   if (typeof freezeFrameVideos === "undefined") return;
-
-  //   console.log(freezeFrameVideos);
-  // }, [freezeFrameVideos]);
-
   return (
     <div className={styles.root}>
       <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
@@ -188,14 +203,14 @@ const App = () => {
         THIS STORY IS BEST EXPERIENCED WITH SOUND ON
       </div>
 
-      <button id="toggle-global-audio-button" onClick={muteToggle}>
+      <button id="toggle-global-audio-button" onClick={muteToggle} ref={muteEl}>
         {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 
       {createPortal(
         <button
           id="toggle-global-audio-float"
-          className={styles.audioFloat}
+          className={`${styles.audioFloat} ${!showButton && styles.hidden}`}
           onClick={muteToggle}
         >
           {isMuted ? <img src={mute} /> : <img src={unmute} />}
