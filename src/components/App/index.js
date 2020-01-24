@@ -203,7 +203,7 @@ const App = props => {
         THIS STORY IS BEST EXPERIENCED WITH SOUND ON
       </div>
 
-      <button id="toggle-global-audio-button" onClick={muteToggle} ref={muteEl}>
+      <button className={styles.enableAudio} id="toggle-global-audio-button" onClick={muteToggle} ref={muteEl}>
         {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 
