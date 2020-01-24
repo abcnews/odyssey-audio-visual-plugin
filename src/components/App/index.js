@@ -3,15 +3,16 @@ import { useState, useEffect, useLayoutEffect, useRef } from "preact/hooks";
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 
-let videos;
-let freezeFrameVideos;
+const OBSERVATION_RATIO = 0.6;
 
-export default props => {
-  const [isMuted, _setIsMuted] = useState(true);
-
-  const stateRef = useRef(isMuted);
+const App = props => {
+  const [isMuted, _setIsMuted] = useState(true); // Start muted
+  const [videos, setVideos] = useState();
+  const [freezeFrameVideos, setFreezeFrameVideos] = useState();
 
   // Used to access state in eventListeners
+  const stateRef = useRef(isMuted);
+
   const setIsMuted = data => {
     stateRef.current = data;
     _setIsMuted(data);
@@ -25,7 +26,7 @@ export default props => {
     setIsMuted(!isMuted);
 
     // Unmute freezeframe videos
-    freezeFrameVideos = document.querySelectorAll(".AC_W_aNL video");
+    // freezeFrameVideos = document.querySelectorAll(".AC_W_aNL video");
 
     freezeFrameVideos.forEach(video => {
       video.muted = !isMuted;
@@ -38,17 +39,18 @@ export default props => {
   };
 
   // This is done when element observed
-  const callback = (entries, observer) => {
+  const observerCallback = (entries, observer) => {
     entries.forEach(entry => {
       // Don't fire on load
       if (entry.intersectionRatio === 0) return;
+      console.log(entry);
 
-      if (entry.isIntersecting) {
+      if (entry.intersectionRatio >= OBSERVATION_RATIO) {
         // Get the actual video element
         const entryVid = entry.target.querySelector("video");
 
         // Play the video
-        entry.target.api.play();
+        if (entry.target.api.isPaused()) entry.target.api.play();
 
         // If we're already fading out, then stop
         clearInterval(entryVid.fadeOutIntervalId);
@@ -99,12 +101,24 @@ export default props => {
 
   // Init effect run on mount
   useEffect(() => {
-    videos = document.querySelectorAll(".VideoPlayer");
+    // Select all Odyssey video player div elements
+    // videos = document.querySelectorAll(".VideoPlayer");
+    setVideos(document.querySelectorAll(".VideoPlayer"));
 
-    let observer = new IntersectionObserver(callback, {
+    // Wait for FreezeFrame to load
+    // TODO: find a better way to do this
+    setTimeout(() => {
+      setFreezeFrameVideos(document.querySelectorAll(".AC_W_aNL video"));
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    if (typeof videos === "undefined") return;
+
+    let observer = new IntersectionObserver(observerCallback, {
       root: null,
       rootMargin: "0px",
-      threshold: 0.6
+      threshold: OBSERVATION_RATIO
     });
 
     // Add video players to our observer
@@ -112,7 +126,7 @@ export default props => {
       observer.observe(video);
 
       // Initially set videos to muted, in case not ambient
-      video.api.setMuted(isMuted);
+      if (!video.api.isAmbient) video.api.setMuted(isMuted);
 
       // Set volume to zero so we can fade in
       const videoEl = video.querySelector("video");
@@ -120,32 +134,41 @@ export default props => {
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-      video.api.isAmbient = true;
+      // video.api.isAmbient = true;
 
-      const eventListener = () => {
-        setIsMuted(!stateRef.current);
+      // const eventListener = () => {
+      //   setIsMuted(!stateRef.current);
 
-        videos.forEach(vid => {
-          if (vid.api.isMuted()) vid.api.setMuted(false);
-          else if (!vid.api.isMuted()) vid.api.setMuted(true);
-        });
+      //   videos.forEach(vid => {
+      //     if (vid.api.isMuted()) vid.api.setMuted(false);
+      //     else if (!vid.api.isMuted()) vid.api.setMuted(true);
+      //   });
 
-        freezeFrameVideos.forEach(video => {
-          video.muted = !video.muted;
-        });
-      };
+      //   freezeFrameVideos.forEach(video => {
+      //     video.muted = !video.muted;
+      //   });
+      // };
 
       // Make "fake-ambient" videos support mute
-      const videoMuteButton = video.querySelector(".VideoControls-mute");
+      // const videoMuteButton = video.querySelector(".VideoControls-mute");
 
-      videoMuteButton &&
-        videoMuteButton.addEventListener("click", eventListener);
+      // videoMuteButton &&
+      //   videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
-      videoMuteButton.removeEventListener("click", eventListener);
+      // videoMuteButton.removeEventListener("click", eventListener);
+      videos.forEach(video => {
+        observer.unobserve(video);
+      });
     };
-  }, []);
+  }, [videos]);
+
+  useEffect(() => {
+    if (typeof freezeFrameVideos === "undefined") return;
+
+    console.log(freezeFrameVideos);
+  }, [freezeFrameVideos]);
 
   return (
     <div className={styles.root}>
@@ -173,3 +196,5 @@ export default props => {
     </div>
   );
 };
+
+export default App;

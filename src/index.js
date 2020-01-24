@@ -1,7 +1,8 @@
-import { h, render } from 'preact';
-import App from './components/App';
+import "intersection-observer";
+import { h, render } from "preact";
+import App from "./components/App";
 
-const PROJECT_NAME = 'odyssey-audio-visual-plugin';
+const PROJECT_NAME = "odyssey-audio-visual-plugin";
 const root = document.querySelector(`[data-${PROJECT_NAME}-root]`);
 
 function init() {
@@ -11,11 +12,11 @@ function init() {
 init();
 
 if (module.hot) {
-  module.hot.accept('./components/App', () => {
+  module.hot.accept("./components/App", () => {
     try {
       init();
     } catch (err) {
-      import('./components/ErrorBox').then(exports => {
+      import("./components/ErrorBox").then(exports => {
         const ErrorBox = exports.default;
         render(<ErrorBox error={err} />, root);
       });
@@ -23,7 +24,7 @@ if (module.hot) {
   });
 }
 
-if (process.env.NODE_ENV === 'development') {
-  require('preact/debug');
+if (process.env.NODE_ENV === "development") {
+  require("preact/debug");
   console.debug(`[${PROJECT_NAME}] public path: ${__webpack_public_path__}`);
 }
