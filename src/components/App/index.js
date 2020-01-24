@@ -1,11 +1,15 @@
 import { h, Component } from "preact";
 import { useState, useEffect, useLayoutEffect, useRef } from "preact/hooks";
+import { createPortal } from "preact/compat";
+
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
+import mute from "./mute.svg";
+import unmute from "./unmute.svg";
 
 const OBSERVATION_RATIO = 0.6;
 
-const App = props => {
+const App = () => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [videos, setVideos] = useState();
   const [freezeFrameVideos, setFreezeFrameVideos] = useState();
@@ -43,8 +47,8 @@ const App = props => {
     entries.forEach(entry => {
       // Don't fire on load
       if (entry.intersectionRatio === 0) return;
-      console.log(entry);
 
+      // Observe coming into view
       if (entry.intersectionRatio >= OBSERVATION_RATIO) {
         // Get the actual video element
         const entryVid = entry.target.querySelector("video");
@@ -72,6 +76,7 @@ const App = props => {
             }
           }, interval);
         }
+        // Observe going out of view
       } else {
         const entryVid = entry.target.querySelector("video");
 
@@ -102,7 +107,6 @@ const App = props => {
   // Init effect run on mount
   useEffect(() => {
     // Select all Odyssey video player div elements
-    // videos = document.querySelectorAll(".VideoPlayer");
     setVideos(document.querySelectorAll(".VideoPlayer"));
 
     // Wait for FreezeFrame to load
@@ -164,11 +168,11 @@ const App = props => {
     };
   }, [videos]);
 
-  useEffect(() => {
-    if (typeof freezeFrameVideos === "undefined") return;
+  // useEffect(() => {
+  //   if (typeof freezeFrameVideos === "undefined") return;
 
-    console.log(freezeFrameVideos);
-  }, [freezeFrameVideos]);
+  //   console.log(freezeFrameVideos);
+  // }, [freezeFrameVideos]);
 
   return (
     <div className={styles.root}>
@@ -184,14 +188,19 @@ const App = props => {
         THIS STORY IS BEST EXPERIENCED WITH SOUND ON
       </div>
 
-      {isMuted ? (
-        <button id="toggle-global-audio-button" onClick={muteToggle}>
-          ENABLE AUDIO
-        </button>
-      ) : (
-        <button id="toggle-global-audio-button" onClick={muteToggle}>
-          MUTE AUDIO
-        </button>
+      <button id="toggle-global-audio-button" onClick={muteToggle}>
+        {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
+      </button>
+
+      {createPortal(
+        <button
+          id="toggle-global-audio-float"
+          className={styles.audioFloat}
+          onClick={muteToggle}
+        >
+          {isMuted ? <img src={mute} /> : <img src={unmute} />}
+        </button>,
+        document.body
       )}
     </div>
   );
