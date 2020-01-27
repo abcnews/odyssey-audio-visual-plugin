@@ -44,7 +44,14 @@ const App = props => {
   const observerCallback = (entries, observer) => {
     entries.forEach(entry => {
       // Don't fire on load
-      if (entry.intersectionRatio === 0) return;
+      if (entry.intersectionRatio === 0) {
+        // First pause all vids not in view
+        setTimeout(() => {
+          entry.target.api.pause();
+        }, 1000);
+
+        return;
+      }
 
       // Observe coming into view
       if (entry.intersectionRatio >= OBSERVATION_RATIO) {
@@ -191,10 +198,6 @@ const App = props => {
 
       if (videoMuteButton)
         videoMuteButton.addEventListener("click", eventListener);
-
-      setTimeout(() => {
-        video.api.pause();
-      }, 1000);
     });
 
     return () => {
