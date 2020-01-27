@@ -4,6 +4,7 @@ import { createPortal } from "preact/compat";
 
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
+import airpodsInverted from "./airpods-inverted.svg";
 import mute from "./mute.svg";
 import unmute from "./unmute.svg";
 
@@ -14,6 +15,7 @@ const App = props => {
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState();
   const [freezeFrameVideos, setFreezeFrameVideos] = useState();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const muteEl = useRef(null);
 
@@ -132,6 +134,11 @@ const App = props => {
 
     buttonObserver.observe(muteEl.current);
 
+    // For IE11 support let's invert colors manually
+    // instead of useing CSS filter: invert(1)
+    const html = document.querySelector("html");
+    if (html.classList.contains("is-dark-mode")) setIsDarkMode(true);
+
     return () => {
       buttonObserver.unobserve(muteEl.current);
     };
@@ -159,30 +166,32 @@ const App = props => {
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-      // video.api.isAmbient = true;
+      video.api.isAmbient = true;
 
-      // const eventListener = () => {
-      //   setIsMuted(!stateRef.current);
+      const eventListener = () => {
+        setIsMuted(!stateRef.current);
 
-      //   videos.forEach(vid => {
-      //     if (vid.api.isMuted()) vid.api.setMuted(false);
-      //     else if (!vid.api.isMuted()) vid.api.setMuted(true);
-      //   });
+        videos.forEach(vid => {
+          if (vid.api.isMuted()) vid.api.setMuted(false);
+          else if (!vid.api.isMuted()) vid.api.setMuted(true);
+        });
 
-      //   freezeFrameVideos.forEach(video => {
-      //     video.muted = !video.muted;
-      //   });
-      // };
+        if (typeof freezeFrameVideos !== "undefined")
+          freezeFrameVideos.forEach(video => {
+            video.muted = !video.muted;
+          });
+      };
 
       // Make "fake-ambient" videos support mute
-      // const videoMuteButton = video.querySelector(".VideoControls-mute");
+      const videoMuteButton = video.querySelector(".VideoControls-mute");
 
-      // videoMuteButton &&
-      //   videoMuteButton.addEventListener("click", eventListener);
+      if (videoMuteButton)
+        videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
-      // videoMuteButton.removeEventListener("click", eventListener);
+      videoMuteButton.removeEventListener("click", eventListener);
+
       videos.forEach(video => {
         observer.unobserve(video);
       });
@@ -192,7 +201,7 @@ const App = props => {
   return (
     <div className={styles.root}>
       <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
-        <img src={airpods} />
+        {isDarkMode ? <img src={airpodsInverted} /> : <img src={airpods} />}
       </div>
 
       <div className={`${styles.text} ${isMuted && styles.hidden}`}>
@@ -203,7 +212,12 @@ const App = props => {
         THIS STORY IS BEST EXPERIENCED WITH SOUND ON
       </div>
 
-      <button className={styles.enableAudio} id="toggle-global-audio-button" onClick={muteToggle} ref={muteEl}>
+      <button
+        className={styles.enableAudio}
+        id="toggle-global-audio-button"
+        onClick={muteToggle}
+        ref={muteEl}
+      >
         {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 

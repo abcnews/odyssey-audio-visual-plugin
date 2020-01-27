@@ -80,9 +80,9 @@
 }
 
 :global {
-  .is-dark-mode :local(.icon) img {
-    filter: invert(1);
-  }
+  // .is-dark-mode :local(.icon) img {
+  //   filter: invert(1);
+  // }
 
   .is-dark-mode :local(.text) {
     color: white;
