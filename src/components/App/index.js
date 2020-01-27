@@ -48,6 +48,8 @@ const App = props => {
       // Don't fire on load
       if (entry.intersectionRatio === 0) return;
 
+      console.log(entry);
+
       // Observe coming into view
       if (entry.intersectionRatio >= OBSERVATION_RATIO) {
         // Get the actual video element
@@ -187,10 +189,15 @@ const App = props => {
 
       if (videoMuteButton)
         videoMuteButton.addEventListener("click", eventListener);
+
+      setTimeout(() => {
+        video.api.pause();
+      }, 1000);
     });
 
     return () => {
-      videoMuteButton.removeEventListener("click", eventListener);
+      if (videoMuteButton)
+        videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
         observer.unobserve(video);
