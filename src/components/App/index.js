@@ -35,8 +35,6 @@ const App = props => {
     setIsMuted(!isMuted);
 
     // Unmute freezeframe videos
-    // freezeFrameVideos = document.querySelectorAll(".AC_W_aNL video");
-
     freezeFrameVideos.forEach(video => {
       video.muted = !isMuted;
     });
@@ -47,8 +45,6 @@ const App = props => {
     entries.forEach(entry => {
       // Don't fire on load
       if (entry.intersectionRatio === 0) return;
-
-      console.log(entry);
 
       // Observe coming into view
       if (entry.intersectionRatio >= OBSERVATION_RATIO) {
@@ -146,7 +142,10 @@ const App = props => {
     };
   }, []);
 
+  // Run after videos have been detected
   useEffect(() => {
+    let videoMuteButton;
+
     if (typeof videos === "undefined") return;
 
     const observer = new IntersectionObserver(observerCallback, {
@@ -165,6 +164,9 @@ const App = props => {
       // Set volume to zero so we can fade in
       const videoEl = video.querySelector("video");
       videoEl.volume = 0.0;
+
+      // Also set preload to auto to help playback
+      videoEl.preload = "auto";
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
@@ -185,7 +187,7 @@ const App = props => {
       };
 
       // Make "fake-ambient" videos support mute
-      const videoMuteButton = video.querySelector(".VideoControls-mute");
+      videoMuteButton = video.querySelector(".VideoControls-mute");
 
       if (videoMuteButton)
         videoMuteButton.addEventListener("click", eventListener);
