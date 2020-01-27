@@ -8,7 +8,10 @@ import airpodsInverted from "./airpods-inverted.svg";
 import mute from "./mute.svg";
 import unmute from "./unmute.svg";
 
-const OBSERVATION_RATIO = 0.6;
+// This has to be 0.0 for now
+const OBSERVATION_RATIO = 0.0;
+// Controls proportion of screen to cut observer margin
+const OBSERVATION_MARGIN_RATIO = 0.2
 
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
@@ -42,24 +45,30 @@ const App = props => {
 
   // This is done when element observed
   const observerCallback = (entries, observer) => {
-    entries.forEach(entry => {
-      // Don't fire on load
-      if (entry.intersectionRatio === 0) {
-        // First pause all vids not in view
-        setTimeout(() => {
-          entry.target.api.pause();
-        }, 1000);
+    // if (video.parentNode.classList.contains("is-fixed")) {
+    //   player =
+    // }
 
-        return;
-      }
+    entries.forEach(entry => {
+      const player = entry.target.firstChild;
+
+      // Don't fire on load
+      // if (entry.intersectionRatio === 0) {
+      //   // First pause all vids not in view
+      //   setTimeout(() => {
+      //     player.api.pause();
+      //   }, 1000);
+
+      //   return;
+      // }
 
       // Observe coming into view
-      if (entry.intersectionRatio >= OBSERVATION_RATIO) {
+      if (entry.intersectionRatio > OBSERVATION_RATIO) {
         // Get the actual video element
-        const entryVid = entry.target.querySelector("video");
+        const entryVid = player.querySelector("video");
 
         // Play the video
-        if (entry.target.api.isPaused()) entry.target.api.play();
+        if (player.api.isPaused()) player.api.play();
 
         // If we're already fading out, then stop
         clearInterval(entryVid.fadeOutIntervalId);
@@ -83,7 +92,7 @@ const App = props => {
         }
         // Observe going out of view
       } else {
-        const entryVid = entry.target.querySelector("video");
+        const entryVid = player.querySelector("video");
 
         // If we're already fading in, then stop
         clearInterval(entryVid.fadeInIntervalId);
@@ -100,7 +109,7 @@ const App = props => {
               entryVid.volume = vol.toFixed(2);
             } else {
               // Stop the setInterval when 0 is reached
-              entry.target.api.pause();
+              player.api.pause();
               clearInterval(entryVid.fadeOutIntervalId);
             }
           }, interval);
@@ -108,6 +117,25 @@ const App = props => {
       }
     });
   };
+
+  // const fixedObserverCallback = (entries, observer) => {
+  //   entries.forEach(entry => {
+  //     console.log(entry);
+
+  //     const videoDiv = entry.target.firstChild;
+
+  //     // Return on initial load
+  //     if (
+  //       entry.boundingClientRect.y >
+  //       window.innerHeight + window.innerHeight / 2
+  //     ) {
+  //       videoDiv.api.pause()
+  //       return;
+  //     }
+
+  //     videoDiv.api.play()
+  //   });
+  // };
 
   // Init effect run on mount
   useEffect(() => {
@@ -157,23 +185,29 @@ const App = props => {
 
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
-      rootMargin: "0px",
+      rootMargin: `-${window.innerHeight * OBSERVATION_MARGIN_RATIO}px 0px`,
       threshold: OBSERVATION_RATIO
     });
 
-    const fixedObserver = new IntersectionObserver(observerCallback, {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.0
-    });
+    // const fixedObserver = new IntersectionObserver(fixedObserverCallback, {
+    //   root: null,
+    //   rootMargin: "0px",
+    //   threshold: 0.0
+    // });
 
     // Add video players to our observer
     videos.forEach(video => {
-      console.log(video.parentNode.classList.contains("is-fixed"))
-      observer.observe(video);
+      // console.log(video.parentNode.classList.contains("is-fixed"));
+      // if (video.parentNode.classList.contains("is-fixed"))
+      //   fixedObserver.observe(video.parentNode);
+      // else observer.observe(video);
+
+      observer.observe(video.parentNode);
 
       // Initially set videos to muted, in case not ambient
-      if (!video.api.isAmbient) video.api.setMuted(isMuted);
+      // if (!video.api.isAmbient)
+      video.api.setMuted(isMuted);
+      video.api.pause();
 
       // Set volume to zero so we can fade in
       const videoEl = video.querySelector("video");
@@ -212,6 +246,10 @@ const App = props => {
         videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
+        //   if (video.parentNode.classList.contains("is-fixed"))
+        //   fixedObserver.unobserve(video.parentNode);
+        // else observer.unobserve(video);
+
         observer.unobserve(video);
       });
     };
