@@ -161,8 +161,15 @@ const App = props => {
       threshold: OBSERVATION_RATIO
     });
 
+    const fixedObserver = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.0
+    });
+
     // Add video players to our observer
     videos.forEach(video => {
+      console.log(video.parentNode.classList.contains("is-fixed"))
       observer.observe(video);
 
       // Initially set videos to muted, in case not ambient
