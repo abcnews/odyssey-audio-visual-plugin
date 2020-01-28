@@ -13,8 +13,6 @@ const OBSERVATION_RATIO = 0.0;
 // Controls proportion of screen to cut observer margin
 const OBSERVATION_MARGIN_RATIO = 0.2;
 
-let currentVideo;
-
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
@@ -47,31 +45,10 @@ const App = props => {
 
   // This is done when element observed
   const observerCallback = (entries, observer) => {
-    // if (video.parentNode.classList.contains("is-fixed")) {
-    //   player =
-    // }
-
     entries.forEach(entry => {
       const player = entry.target.firstChild;
 
-      // Don't fire on load
-      // if (entry.intersectionRatio === 0) {
-      //   // First pause all vids not in view
-      //   setTimeout(() => {
-      //     player.api.pause();
-      //   }, 1000);
-
-      //   return;
-      // }
-
-      // Observe coming into view
       if (entry.intersectionRatio > OBSERVATION_RATIO) {
-        if (currentVideo) {
-          console.log(currentVideo);
-        }
-
-        currentVideo = player;
-
         fadeInVideoEl(player);
       } else {
         // Observe going out of view
@@ -134,25 +111,6 @@ const App = props => {
     }
   };
 
-  // const fixedObserverCallback = (entries, observer) => {
-  //   entries.forEach(entry => {
-  //     console.log(entry);
-
-  //     const videoDiv = entry.target.firstChild;
-
-  //     // Return on initial load
-  //     if (
-  //       entry.boundingClientRect.y >
-  //       window.innerHeight + window.innerHeight / 2
-  //     ) {
-  //       videoDiv.api.pause()
-  //       return;
-  //     }
-
-  //     videoDiv.api.play()
-  //   });
-  // };
-
   // Init effect run on mount
   useEffect(() => {
     // Select all Odyssey video player div elements
@@ -205,23 +163,12 @@ const App = props => {
       threshold: OBSERVATION_RATIO
     });
 
-    // const fixedObserver = new IntersectionObserver(fixedObserverCallback, {
-    //   root: null,
-    //   rootMargin: "0px",
-    //   threshold: 0.0
-    // });
-
     // Add video players to our observer
     videos.forEach(video => {
-      // console.log(video.parentNode.classList.contains("is-fixed"));
-      // if (video.parentNode.classList.contains("is-fixed"))
-      //   fixedObserver.observe(video.parentNode);
-      // else observer.observe(video);
-
       observer.observe(video.parentNode);
 
       // Initially set videos to muted, in case not ambient
-      // if (!video.api.isAmbient)
+      // And pause
       video.api.setMuted(isMuted);
       video.api.pause();
 
@@ -262,10 +209,6 @@ const App = props => {
         videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
-        //   if (video.parentNode.classList.contains("is-fixed"))
-        //   fixedObserver.unobserve(video.parentNode);
-        // else observer.unobserve(video);
-
         observer.unobserve(video);
       });
     };
