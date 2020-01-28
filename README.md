@@ -1,6 +1,6 @@
 # Odyssey Audio Visual Plugin
 
-A plugin for ABC's [Odyssey](https://github.com/abcnews/odyssey) Story Format that enhances videos playback.
+A plugin for ABC's [Odyssey](https://github.com/abcnews/odyssey) Story Format that enhances video playback.
 
 ## Authors
 
