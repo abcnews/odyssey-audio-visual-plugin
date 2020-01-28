@@ -11,7 +11,9 @@ import unmute from "./unmute.svg";
 // This has to be 0.0 for now
 const OBSERVATION_RATIO = 0.0;
 // Controls proportion of screen to cut observer margin
-const OBSERVATION_MARGIN_RATIO = 0.2
+const OBSERVATION_MARGIN_RATIO = 0.2;
+
+let currentVideo;
 
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
@@ -64,58 +66,72 @@ const App = props => {
 
       // Observe coming into view
       if (entry.intersectionRatio > OBSERVATION_RATIO) {
-        // Get the actual video element
-        const entryVid = player.querySelector("video");
-
-        // Play the video
-        if (player.api.isPaused()) player.api.play();
-
-        // If we're already fading out, then stop
-        clearInterval(entryVid.fadeOutIntervalId);
-
-        // Fade in
-        if (entryVid.volume < 1.0) {
-          let vol = entryVid.volume;
-          let interval = 200;
-
-          entryVid.fadeInIntervalId = setInterval(function() {
-            // Reduce volume as long as it is above 0
-            if (vol < 1.0) {
-              vol += 0.4;
-              if (vol > 1.0) vol = 1.0;
-              entryVid.volume = vol.toFixed(2);
-            } else {
-              // Stop the setInterval when 0 is reached
-              clearInterval(entryVid.fadeInIntervalId);
-            }
-          }, interval);
+        if (currentVideo) {
+          console.log(currentVideo);
         }
-        // Observe going out of view
+
+        currentVideo = player;
+
+        fadeInVideoEl(player);
       } else {
-        const entryVid = player.querySelector("video");
-
-        // If we're already fading in, then stop
-        clearInterval(entryVid.fadeInIntervalId);
-
-        if (entryVid.volume > 0.0) {
-          let vol = entryVid.volume;
-          let interval = 200;
-
-          entryVid.fadeOutIntervalId = setInterval(function() {
-            // Reduce volume as long as it is above 0
-            if (vol > 0) {
-              vol -= 0.1;
-              if (vol < 0.0) vol = 0.0;
-              entryVid.volume = vol.toFixed(2);
-            } else {
-              // Stop the setInterval when 0 is reached
-              player.api.pause();
-              clearInterval(entryVid.fadeOutIntervalId);
-            }
-          }, interval);
-        }
+        // Observe going out of view
+        fadeOutVideoEl(player);
       }
     });
+  };
+
+  const fadeInVideoEl = videoPlayer => {
+    // Get the actual video element
+    const videoEl = videoPlayer.querySelector("video");
+
+    // Play the video
+    if (videoPlayer.api.isPaused()) videoPlayer.api.play();
+
+    // If we're already fading out, then stop
+    clearInterval(videoEl.fadeOutIntervalId);
+
+    // Fade in
+    if (videoEl.volume < 1.0) {
+      let vol = videoEl.volume;
+      let interval = 200;
+
+      videoEl.fadeInIntervalId = setInterval(function() {
+        // Reduce volume as long as it is above 0
+        if (vol < 1.0) {
+          vol += 0.4;
+          if (vol > 1.0) vol = 1.0;
+          videoEl.volume = vol.toFixed(2);
+        } else {
+          // Stop the setInterval when 0 is reached
+          clearInterval(videoEl.fadeInIntervalId);
+        }
+      }, interval);
+    }
+  };
+
+  const fadeOutVideoEl = videoPlayer => {
+    const videoEl = videoPlayer.querySelector("video");
+
+    // If we're already fading in, then stop
+    clearInterval(videoEl.fadeInIntervalId);
+
+    if (videoEl.volume > 0.0) {
+      let vol = videoEl.volume;
+      let interval = 200;
+
+      videoEl.fadeOutIntervalId = setInterval(function() {
+        // Reduce volume as long as it is above 0
+        if (vol > 0) {
+          vol -= 0.1;
+          if (vol < 0.0) vol = 0.0;
+          videoEl.volume = vol.toFixed(2);
+        } else {
+          // Stop the setInterval when 0 is reached
+          videoPlayer.api.pause();
+          clearInterval(videoEl.fadeOutIntervalId);
+        }
+      }, interval);
+    }
   };
 
   // const fixedObserverCallback = (entries, observer) => {
