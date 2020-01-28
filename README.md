@@ -1,6 +1,6 @@
 # Odyssey Audio Visual Plugin
 
-A project generated from [aunty](https://github.com/abcnews/aunty)'s `preact` project template.
+A plugin for ABC's [Odyssey](https://github.com/abcnews/odyssey) Story Format that enhances videos so they play with sound and fade out and cross fade etc etc etc.
 
 ## Authors
 
