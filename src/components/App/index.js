@@ -11,7 +11,7 @@ import unmute from "./unmute.svg";
 // This has to be 0.0 for now
 const OBSERVATION_RATIO = 0.0;
 // Controls proportion of screen to cut observer margin
-const OBSERVATION_MARGIN_RATIO = 0.2;
+const OBSERVATION_MARGIN_RATIO = 0.35;
 
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
