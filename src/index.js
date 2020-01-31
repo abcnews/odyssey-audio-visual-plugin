@@ -1,4 +1,5 @@
 import "intersection-observer";
+import "./polyfills"
 import { h, render } from "preact";
 import App from "./components/App";
 

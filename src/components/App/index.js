@@ -38,21 +38,19 @@ const App = props => {
     setIsMuted(!isMuted);
 
     // Unmute freezeframe videos
-    freezeFrameVideos.forEach(video => {
-      video.muted = !isMuted;
-    });
+    // freezeFrameVideos.forEach(video => {
+    //   video.muted = !isMuted;
+    // });
   };
 
   // This is done when element observed
   const observerCallback = (entries, observer) => {
     entries.forEach(entry => {
-      const player = entry.target.firstChild;
-
       if (entry.intersectionRatio > OBSERVATION_RATIO) {
-        fadeInVideoEl(player);
+        fadeInVideoEl(entry.target.firstChild);
       } else {
         // Observe going out of view
-        fadeOutVideoEl(player);
+        fadeOutVideoEl(entry.target.firstChild);
       }
     });
   };
@@ -118,9 +116,9 @@ const App = props => {
 
     // Wait for FreezeFrame to load
     // TODO: find a better way to do this
-    setTimeout(() => {
-      setFreezeFrameVideos(document.querySelectorAll(".AC_W_aNL video"));
-    }, 1000);
+    // setTimeout(() => {
+    //   setFreezeFrameVideos(document.querySelectorAll(".AC_W_aNL video"));
+    // }, 1000);
 
     // Showing and hiding the floating mute button
     const buttonObserverCallback = (entries, observer) => {
@@ -153,7 +151,7 @@ const App = props => {
 
   // Run after videos have been detected
   useEffect(() => {
-    let videoMuteButton;
+    // let videoMuteButton;
 
     if (typeof videos === "undefined") return;
 
@@ -170,43 +168,43 @@ const App = props => {
       // Initially set videos to muted, in case not ambient
       // And pause
       video.api.setMuted(isMuted);
-      video.api.pause();
+      // video.api.pause();
 
       // Set volume to zero so we can fade in
       const videoEl = video.querySelector("video");
       videoEl.volume = 0.0;
 
       // Also set preload to auto to help playback
-      videoEl.preload = "auto";
+      // videoEl.preload = "auto";
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-      video.api.isAmbient = true;
+    //   video.api.isAmbient = true;
 
-      const eventListener = () => {
-        setIsMuted(!stateRef.current);
+    //   const eventListener = () => {
+    //     setIsMuted(!stateRef.current);
 
-        videos.forEach(vid => {
-          if (vid.api.isMuted()) vid.api.setMuted(false);
-          else if (!vid.api.isMuted()) vid.api.setMuted(true);
-        });
+    //     videos.forEach(vid => {
+    //       if (vid.api.isMuted()) vid.api.setMuted(false);
+    //       else if (!vid.api.isMuted()) vid.api.setMuted(true);
+    //     });
 
-        if (typeof freezeFrameVideos !== "undefined")
-          freezeFrameVideos.forEach(video => {
-            video.muted = !video.muted;
-          });
-      };
+    //     if (typeof freezeFrameVideos !== "undefined")
+    //       freezeFrameVideos.forEach(video => {
+    //         video.muted = !video.muted;
+    //       });
+    //   };
 
-      // Make "fake-ambient" videos support mute
-      videoMuteButton = video.querySelector(".VideoControls-mute");
+    //   // Make "fake-ambient" videos support mute
+    //   videoMuteButton = video.querySelector(".VideoControls-mute");
 
-      if (videoMuteButton)
-        videoMuteButton.addEventListener("click", eventListener);
+    //   if (videoMuteButton)
+    //     videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
-      if (videoMuteButton)
-        videoMuteButton.removeEventListener("click", eventListener);
+      // if (videoMuteButton)
+      //   videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
         observer.unobserve(video);
