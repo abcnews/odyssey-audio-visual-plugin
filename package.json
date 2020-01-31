@@ -1,27 +1,27 @@
 {
-  "name": "odyssey-audio-visual-plugin",
-  "version": "1.0.0-pre",
-  "description": "A project generated from aunty's preact project template.",
-  "license": "MIT",
-  "private": true,
-  "contributors": [
-    "Joshua Byrd <phocks@gmail.com>"
-  ],
-  "aunty": {
-    "type": "preact"
-  },
-  "scripts": {
-    "start": "aunty serve",
-    "test": "aunty test"
-  },
-  "devDependencies": {
-    "@abcnews/aunty": "^10.8.0",
-    "html-looks-like": "^1.0.3",
-    "preact-render-to-string": "^5.1.3"
-  },
-  "dependencies": {
-    "intersection-observer": "^0.7.0",
-    "preact": "^10.2.1",
-    "preact-compat": "^3.19.0"
-  }
+	"name": "odyssey-audio-visual-plugin",
+	"version": "1.0.0",
+	"description": "A project generated from aunty's preact project template.",
+	"license": "MIT",
+	"private": true,
+	"contributors": [
+		"Joshua Byrd <phocks@gmail.com>"
+	],
+	"aunty": {
+		"type": "preact"
+	},
+	"scripts": {
+		"start": "aunty serve",
+		"test": "aunty test"
+	},
+	"devDependencies": {
+		"@abcnews/aunty": "^10.8.0",
+		"html-looks-like": "^1.0.3",
+		"preact-render-to-string": "^5.1.3"
+	},
+	"dependencies": {
+		"intersection-observer": "^0.7.0",
+		"preact": "^10.2.1",
+		"preact-compat": "^3.19.0"
+	}
 }
