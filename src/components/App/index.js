@@ -8,10 +8,15 @@ import airpodsInverted from "./airpods-inverted.svg";
 import mute from "./volume-mute.svg";
 import unmute from "./volume.svg";
 
-// This has to be 0.0 for now
+// This has to be 0.0 for now (don't ask questions)
 const OBSERVATION_RATIO = 0.0;
+
 // Controls proportion of screen to cut observer margin
 const OBSERVATION_MARGIN_RATIO = 0.35;
+
+// How many seconds before we unload videos
+const SECONDS_BEFORE_UNLOAD = 30;
+
 
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
@@ -59,16 +64,20 @@ const App = props => {
     // Get the actual video element
     const videoEl = videoPlayer.querySelector("video");
 
+    // If video has been unloaded we need to load it up again
     if (typeof videoEl.dataset.src !== "undefined") {
       videoEl.src = videoEl.dataset.src;
       videoEl.load();
+      videoEl.removeAttribute("data-src");
     }
+
+    // If we're set to unload, don't do it
+    clearTimeout(videoEl.unloaderId);
+    // If we're already fading out, then stop
+    clearInterval(videoEl.fadeOutIntervalId);
 
     // Play the video
     if (videoPlayer.api.isPaused()) videoPlayer.api.play();
-
-    // If we're already fading out, then stop
-    clearInterval(videoEl.fadeOutIntervalId);
 
     // Fade in
     if (videoEl.volume < 1.0) {
@@ -109,9 +118,13 @@ const App = props => {
           // Stop the setInterval when 0 is reached
           videoPlayer.api.pause();
           clearInterval(videoEl.fadeOutIntervalId);
-          videoEl.dataset.src = videoEl.src;
-          videoEl.removeAttribute("src"); // empty source
-          videoEl.load();
+
+          // After a long while not playing we unload the vids
+          videoEl.unloaderId = setTimeout(() => {
+            videoEl.dataset.src = videoEl.src;
+            videoEl.removeAttribute("src"); // empty source
+            videoEl.load();
+          }, SECONDS_BEFORE_UNLOAD * 1000);
         }
       }, interval);
     }
@@ -159,7 +172,8 @@ const App = props => {
 
   // Run after videos have been detected
   useEffect(() => {
-    // let videoMuteButton;
+    let videoMuteButton;
+    let eventListener;
 
     if (typeof videos === "undefined") return;
 
@@ -176,43 +190,44 @@ const App = props => {
       // Initially set videos to muted, in case not ambient
       // And pause
       video.api.setMuted(isMuted);
-      // video.api.pause();
+      video.api.pause();
 
       // Set volume to zero so we can fade in
       const videoEl = video.querySelector("video");
       videoEl.volume = 0.0;
 
       // Also set preload to auto to help playback
+      // DON'T DO THIS OR BAD THINGS WILL HAPPEN ON MOBILE WITH LOTS OF VIDS
       // videoEl.preload = "auto";
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-        video.api.isAmbient = true;
+      video.api.isAmbient = true;
 
-      //   const eventListener = () => {
-      //     setIsMuted(!stateRef.current);
+      eventListener = () => {
+        setIsMuted(!stateRef.current);
 
-      //     videos.forEach(vid => {
-      //       if (vid.api.isMuted()) vid.api.setMuted(false);
-      //       else if (!vid.api.isMuted()) vid.api.setMuted(true);
-      //     });
+        videos.forEach(vid => {
+          if (vid.api.isMuted()) vid.api.setMuted(false);
+          else if (!vid.api.isMuted()) vid.api.setMuted(true);
+        });
 
-      //     if (typeof freezeFrameVideos !== "undefined")
-      //       freezeFrameVideos.forEach(video => {
-      //         video.muted = !video.muted;
-      //       });
-      //   };
+        if (typeof freezeFrameVideos !== "undefined")
+          freezeFrameVideos.forEach(video => {
+            video.muted = !video.muted;
+          });
+      };
 
-      //   // Make "fake-ambient" videos support mute
-      //   videoMuteButton = video.querySelector(".VideoControls-mute");
+      // Make "fake-ambient" videos support mute
+      videoMuteButton = video.querySelector(".VideoControls-mute");
 
-      //   if (videoMuteButton)
-      //     videoMuteButton.addEventListener("click", eventListener);
+      if (videoMuteButton)
+        videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
-      // if (videoMuteButton)
-      //   videoMuteButton.removeEventListener("click", eventListener);
+      if (videoMuteButton)
+        videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
         observer.unobserve(video);
