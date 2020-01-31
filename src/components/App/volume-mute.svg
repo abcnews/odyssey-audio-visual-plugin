@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="19px" viewBox="0 0 20 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>icons-media/volume-mute</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M11.5,3 L11.5,21 L6.5,15 L2.5,15 L2.5,9 L6.5,9 L11.5,3 Z M20,8 L21.5,9.5 L19,12 L21.5,14.5 L20,16 L17.5,13.5 L15,16 L13.5,14.5 L16,12 L13.5,9.5 L15,8 L17.5,10.5 L20,8 Z" id="path-1"></path>
+    </defs>
+    <g id="Rich-Media-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01d-Icons/Rich-Media" transform="translate(-1720.000000, -460.000000)">
+            <g id="Read-Watch-and-Listen" transform="translate(236.000000, 416.070312)">
+                <g id="icons-media/volume-mute" transform="translate(1482.436133, 41.665694)">
+                    <rect id="base-icon-size" x="0" y="0" width="24" height="24"></rect>
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="volume-mute" fill="#000000" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    <g id="Colour/Black" stroke-width="1" fill-rule="evenodd" mask="url(#mask-2)" fill="#000000">
+                        <g id="colour/_brand_agnostic/black">
+                            <polygon id="Rectangle" points="0 0 24 0 24 24 11.8112305 24 0 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

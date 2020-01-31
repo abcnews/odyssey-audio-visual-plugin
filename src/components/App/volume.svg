@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="19px" height="19px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>icons-media/volume</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M11.9996054,3 L11.9996054,21 L6.99982461,15 L3,15 L3,9 L6.99982461,9 L11.9996054,3 Z M14.0832012,3.2558837 C18.0024333,4.23190985 20.9799995,7.87430539 20.9799995,12 C20.9799995,16.1256946 18.0024333,19.7680901 14.0832012,20.7441163 L14.0833992,18.6689951 C16.9080781,17.7523771 19.0105819,15.0466545 19.0105819,12.0010085 C19.0105819,8.9553626 16.9080781,6.2483153 14.0833992,5.33119499 Z M14.0841378,7.54468676 C15.8235803,8.29479246 17.0391197,10.0073488 17.0391197,12 C17.0391197,13.9926512 15.8235803,15.7052075 14.0841378,16.4553132 L14.0833474,14.1735948 C14.6880908,13.6396522 15.0686798,12.8636754 15.0686798,12 C15.0686798,11.1363246 14.6880908,10.3603478 14.0833474,9.82640516 Z" id="path-1"></path>
+    </defs>
+    <g id="Rich-Media-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01d-Icons/Rich-Media" transform="translate(-1523.000000, -460.000000)">
+            <g id="Read-Watch-and-Listen" transform="translate(236.000000, 416.070312)">
+                <g id="icons-media/volume" transform="translate(1284.252858, 41.665694)">
+                    <rect id="base-icon-size" x="0" y="0" width="24" height="24"></rect>
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="volume" fill="#000000" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    <g id="Colour/Black" stroke-width="1" fill-rule="evenodd" mask="url(#mask-2)" fill="#000000">
+                        <g id="colour/_brand_agnostic/black">
+                            <polygon id="Rectangle" points="0 0 24 0 24 24 11.8112305 24 0 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -5,8 +5,8 @@ import { createPortal } from "preact/compat";
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 import airpodsInverted from "./airpods-inverted.svg";
-import mute from "./mute.svg";
-import unmute from "./unmute.svg";
+import mute from "./volume-mute.svg";
+import unmute from "./volume.svg";
 
 // This has to be 0.0 for now
 const OBSERVATION_RATIO = 0.0;
@@ -59,6 +59,11 @@ const App = props => {
     // Get the actual video element
     const videoEl = videoPlayer.querySelector("video");
 
+    if (typeof videoEl.dataset.src !== "undefined") {
+      videoEl.src = videoEl.dataset.src;
+      videoEl.load();
+    }
+
     // Play the video
     if (videoPlayer.api.isPaused()) videoPlayer.api.play();
 
@@ -104,6 +109,9 @@ const App = props => {
           // Stop the setInterval when 0 is reached
           videoPlayer.api.pause();
           clearInterval(videoEl.fadeOutIntervalId);
+          videoEl.dataset.src = videoEl.src;
+          videoEl.removeAttribute("src"); // empty source
+          videoEl.load();
         }
       }, interval);
     }
@@ -133,7 +141,7 @@ const App = props => {
 
     const buttonObserver = new IntersectionObserver(buttonObserverCallback, {
       root: null,
-      rootMargin: "0px",
+      rootMargin: `0px 0px ${window.innerHeight}px`,
       threshold: 0.0
     });
 
@@ -179,27 +187,27 @@ const App = props => {
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-    //   video.api.isAmbient = true;
+        video.api.isAmbient = true;
 
-    //   const eventListener = () => {
-    //     setIsMuted(!stateRef.current);
+      //   const eventListener = () => {
+      //     setIsMuted(!stateRef.current);
 
-    //     videos.forEach(vid => {
-    //       if (vid.api.isMuted()) vid.api.setMuted(false);
-    //       else if (!vid.api.isMuted()) vid.api.setMuted(true);
-    //     });
+      //     videos.forEach(vid => {
+      //       if (vid.api.isMuted()) vid.api.setMuted(false);
+      //       else if (!vid.api.isMuted()) vid.api.setMuted(true);
+      //     });
 
-    //     if (typeof freezeFrameVideos !== "undefined")
-    //       freezeFrameVideos.forEach(video => {
-    //         video.muted = !video.muted;
-    //       });
-    //   };
+      //     if (typeof freezeFrameVideos !== "undefined")
+      //       freezeFrameVideos.forEach(video => {
+      //         video.muted = !video.muted;
+      //       });
+      //   };
 
-    //   // Make "fake-ambient" videos support mute
-    //   videoMuteButton = video.querySelector(".VideoControls-mute");
+      //   // Make "fake-ambient" videos support mute
+      //   videoMuteButton = video.querySelector(".VideoControls-mute");
 
-    //   if (videoMuteButton)
-    //     videoMuteButton.addEventListener("click", eventListener);
+      //   if (videoMuteButton)
+      //     videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
@@ -235,16 +243,15 @@ const App = props => {
         {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 
-      {createPortal(
+      <div className={styles.audioFloatContainer}>
         <button
           id="toggle-global-audio-float"
           className={`${styles.audioFloat} ${!showButton && styles.hidden}`}
           onClick={muteToggle}
         >
           {isMuted ? <img src={mute} /> : <img src={unmute} />}
-        </button>,
-        document.body
-      )}
+        </button>
+      </div>
     </div>
   );
 };
