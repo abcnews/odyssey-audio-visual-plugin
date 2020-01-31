@@ -190,7 +190,7 @@ const App = props => {
       // Initially set videos to muted, in case not ambient
       // And pause
       video.api.setMuted(isMuted);
-      video.api.pause();
+      // video.api.pause();
 
       // Set volume to zero so we can fade in
       const videoEl = video.querySelector("video");
