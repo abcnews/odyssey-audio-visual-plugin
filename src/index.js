@@ -1,5 +1,5 @@
 import "intersection-observer";
-import "./polyfills"
+import "./polyfills";
 import { h, render } from "preact";
 import App from "./components/App";
 
@@ -10,7 +10,13 @@ function init() {
   render(<App projectName={PROJECT_NAME} />, root);
 }
 
-init();
+if (window.__ODYSSEY__) {
+  init(window.__ODYSSEY__);
+} else {
+  window.addEventListener("odyssey:api", e => {
+    init(e.detail);
+  });
+}
 
 if (module.hot) {
   module.hot.accept("./components/App", () => {

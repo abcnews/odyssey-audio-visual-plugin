@@ -1,6 +1,5 @@
 import { h, Component } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
-import { createPortal } from "preact/compat";
 
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
@@ -16,7 +15,6 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 
 // How many seconds before we unload videos
 const SECONDS_BEFORE_UNLOAD = 30;
-
 
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
@@ -163,7 +161,9 @@ const App = props => {
     // For IE11 support let's invert colors manually
     // instead of useing CSS filter: invert(1)
     const html = document.querySelector("html");
-    if (html.classList.contains("is-dark-mode")) setIsDarkMode(true);
+    if (html.classList.contains("is-dark-mode")) {
+      setIsDarkMode(true);
+    }
 
     return () => {
       buttonObserver.unobserve(muteEl.current);
