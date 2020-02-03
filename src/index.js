@@ -10,6 +10,7 @@ function init() {
   render(<App projectName={PROJECT_NAME} />, root);
 }
 
+// Wait for Odyssey to load first
 if (window.__ODYSSEY__) {
   init(window.__ODYSSEY__);
 } else {
