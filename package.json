@@ -12,7 +12,9 @@
   },
   "scripts": {
     "start": "aunty serve",
-    "test": "aunty test"
+    "test": "aunty test",
+    "build": "aunty build",
+    "deploy": "aunty deploy"
   },
   "devDependencies": {
     "@abcnews/aunty": "^13.0.3",
