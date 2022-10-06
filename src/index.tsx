@@ -1,6 +1,7 @@
 import "intersection-observer";
 import "./polyfills";
 import acto from '@abcnews/alternating-case-to-object';
+import { whenOdysseyLoaded } from '@abcnews/env-utils';
 import { getMountValue, selectMounts } from '@abcnews/mount-utils';
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -24,23 +25,24 @@ function init() {
   }
 }
 
+whenOdysseyLoaded.then(() => init());
+
 // Wait for Odyssey to load first
-if (window.__ODYSSEY__) {
-  init(window.__ODYSSEY__);
-} else {
-  window.addEventListener("odyssey:api", (e) => {
-    init(e.detail);
-  });
-}
+// if (window.__ODYSSEY__) {
+//   init(window.__ODYSSEY__);
+// } else {
+//   window.addEventListener("odyssey:api", (e) => {
+//     init(e.detail);
+//   });
+// }
 
 if (module.hot) {
-  module.hot.accept("./components/App", () => {
+  module.hot.accept('./components/App', () => {
     try {
       init();
     } catch (err) {
-      import("./components/ErrorBox").then((exports) => {
-        const ErrorBox = exports.default;
-        render(<ErrorBox error={err} />, root);
+      import('./components/ErrorBox').then(({ default: ErrorBox }) => {
+        root.render(<ErrorBox error={err} />);
       });
     }
   });

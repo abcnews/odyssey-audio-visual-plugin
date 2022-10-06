@@ -15,10 +15,12 @@
     "test": "aunty test"
   },
   "devDependencies": {
-    "@abcnews/aunty": "^13.0.3"
+    "@abcnews/aunty": "^13.0.3",
+    "@types/webpack-env": "^1.18.0"
   },
   "dependencies": {
     "@abcnews/alternating-case-to-object": "^3.0.2",
+    "@abcnews/env-utils": "^3.0.1",
     "@abcnews/mount-utils": "^2.0.0",
     "intersection-observer": "^0.7.0",
     "react": "^18.2.0",
