@@ -1,5 +1,6 @@
-import { h, Component } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
+// import { h, Component } from "preact";
+// import { useState, useEffect, useRef } from "preact/hooks";
+import React, { useState, useEffect, useRef } from "react";
 
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
@@ -16,7 +17,7 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 // How many seconds before we unload videos
 const SECONDS_BEFORE_UNLOAD = 30;
 
-const App = props => {
+const App = (props) => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState();
@@ -28,13 +29,13 @@ const App = props => {
   // Used to access state in eventListeners
   const stateRef = useRef(isMuted);
 
-  const setIsMuted = data => {
+  const setIsMuted = (data) => {
     stateRef.current = data;
     _setIsMuted(data);
   };
 
-  const muteToggle = event => {
-    videos.forEach(video => {
+  const muteToggle = (event) => {
+    videos.forEach((video) => {
       video.api.setMuted(!isMuted);
     });
 
@@ -48,7 +49,7 @@ const App = props => {
 
   // This is done when element observed
   const observerCallback = (entries, observer) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.intersectionRatio > OBSERVATION_RATIO) {
         fadeInVideoEl(entry.target.firstChild);
       } else {
@@ -58,7 +59,7 @@ const App = props => {
     });
   };
 
-  const fadeInVideoEl = videoPlayer => {
+  const fadeInVideoEl = (videoPlayer) => {
     // Get the actual video element
     const videoEl = videoPlayer.querySelector("video");
 
@@ -82,7 +83,7 @@ const App = props => {
       let vol = videoEl.volume;
       let interval = 200;
 
-      videoEl.fadeInIntervalId = setInterval(function() {
+      videoEl.fadeInIntervalId = setInterval(function () {
         // Reduce volume as long as it is above 0
         if (vol < 1.0) {
           vol += 0.4;
@@ -96,7 +97,7 @@ const App = props => {
     }
   };
 
-  const fadeOutVideoEl = videoPlayer => {
+  const fadeOutVideoEl = (videoPlayer) => {
     const videoEl = videoPlayer.querySelector("video");
 
     // If we're already fading in, then stop
@@ -106,7 +107,7 @@ const App = props => {
       let vol = videoEl.volume;
       let interval = 200;
 
-      videoEl.fadeOutIntervalId = setInterval(function() {
+      videoEl.fadeOutIntervalId = setInterval(function () {
         // Reduce volume as long as it is above 0
         if (vol > 0) {
           vol -= 0.1;
@@ -141,7 +142,7 @@ const App = props => {
 
     // Showing and hiding the floating mute button
     const buttonObserverCallback = (entries, observer) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.intersectionRatio === 0) {
           setShowButton(true);
         } else {
@@ -153,7 +154,7 @@ const App = props => {
     const buttonObserver = new IntersectionObserver(buttonObserverCallback, {
       root: null,
       rootMargin: `0px 0px ${window.innerHeight}px`,
-      threshold: 0.0
+      threshold: 0.0,
     });
 
     buttonObserver.observe(muteEl.current);
@@ -180,11 +181,11 @@ const App = props => {
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
       rootMargin: `-${window.innerHeight * OBSERVATION_MARGIN_RATIO}px 0px`,
-      threshold: OBSERVATION_RATIO
+      threshold: OBSERVATION_RATIO,
     });
 
     // Add video players to our observer
-    videos.forEach(video => {
+    videos.forEach((video) => {
       observer.observe(video.parentNode);
 
       // Initially set videos to muted, in case not ambient
@@ -207,13 +208,13 @@ const App = props => {
       eventListener = () => {
         setIsMuted(!stateRef.current);
 
-        videos.forEach(vid => {
+        videos.forEach((vid) => {
           if (vid.api.isMuted()) vid.api.setMuted(false);
           else if (!vid.api.isMuted()) vid.api.setMuted(true);
         });
 
         if (typeof freezeFrameVideos !== "undefined")
-          freezeFrameVideos.forEach(video => {
+          freezeFrameVideos.forEach((video) => {
             video.muted = !video.muted;
           });
       };
@@ -229,7 +230,7 @@ const App = props => {
       if (videoMuteButton)
         videoMuteButton.removeEventListener("click", eventListener);
 
-      videos.forEach(video => {
+      videos.forEach((video) => {
         observer.unobserve(video);
       });
     };

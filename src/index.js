@@ -1,20 +1,34 @@
 import "intersection-observer";
 import "./polyfills";
-import { h, render } from "preact";
+import acto from '@abcnews/alternating-case-to-object';
+import { getMountValue, selectMounts } from '@abcnews/mount-utils';
+import React from "react";
+import { createRoot } from "react-dom/client";
 import App from "./components/App";
 
+let root;
+let appProps;
 const PROJECT_NAME = "odyssey-audio-visual-plugin";
-const root = document.querySelector(`[data-${PROJECT_NAME}-root]`);
+
+function renderApp() {
+  root.render(<App {...appProps} />);
+}
 
 function init() {
-  render(<App projectName={PROJECT_NAME} />, root);
+  const [appMountEl] = selectMounts("audio-visual-plugin-mount");
+
+  if (appMountEl) {
+    root = createRoot(appMountEl);
+    appProps = acto(getMountValue(appMountEl));
+    renderApp();
+  }
 }
 
 // Wait for Odyssey to load first
 if (window.__ODYSSEY__) {
   init(window.__ODYSSEY__);
 } else {
-  window.addEventListener("odyssey:api", e => {
+  window.addEventListener("odyssey:api", (e) => {
     init(e.detail);
   });
 }
@@ -24,7 +38,7 @@ if (module.hot) {
     try {
       init();
     } catch (err) {
-      import("./components/ErrorBox").then(exports => {
+      import("./components/ErrorBox").then((exports) => {
         const ErrorBox = exports.default;
         render(<ErrorBox error={err} />, root);
       });
@@ -33,6 +47,5 @@ if (module.hot) {
 }
 
 if (process.env.NODE_ENV === "development") {
-  require("preact/debug");
   console.debug(`[${PROJECT_NAME}] public path: ${__webpack_public_path__}`);
 }

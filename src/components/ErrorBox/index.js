@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
 import styles from './styles.css';
 
 export default class ErrorBox extends Component {
