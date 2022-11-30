@@ -17,7 +17,7 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 // How many seconds before we unload videos
 const SECONDS_BEFORE_UNLOAD = 30;
 
-const App = (props) => {
+const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState();
@@ -29,13 +29,13 @@ const App = (props) => {
   // Used to access state in eventListeners
   const stateRef = useRef(isMuted);
 
-  const setIsMuted = (data) => {
+  const setIsMuted = data => {
     stateRef.current = data;
     _setIsMuted(data);
   };
 
-  const muteToggle = (event) => {
-    videos.forEach((video) => {
+  const muteToggle = event => {
+    videos.forEach(video => {
       video.api.setMuted(!isMuted);
     });
 
@@ -49,7 +49,7 @@ const App = (props) => {
 
   // This is done when element observed
   const observerCallback = (entries, observer) => {
-    entries.forEach((entry) => {
+    entries.forEach(entry => {
       if (entry.intersectionRatio > OBSERVATION_RATIO) {
         fadeInVideoEl(entry.target.firstChild);
       } else {
@@ -59,7 +59,7 @@ const App = (props) => {
     });
   };
 
-  const fadeInVideoEl = (videoPlayer) => {
+  const fadeInVideoEl = videoPlayer => {
     // Get the actual video element
     const videoEl = videoPlayer.querySelector("video");
 
@@ -97,7 +97,7 @@ const App = (props) => {
     }
   };
 
-  const fadeOutVideoEl = (videoPlayer) => {
+  const fadeOutVideoEl = videoPlayer => {
     const videoEl = videoPlayer.querySelector("video");
 
     // If we're already fading in, then stop
@@ -142,7 +142,7 @@ const App = (props) => {
 
     // Showing and hiding the floating mute button
     const buttonObserverCallback = (entries, observer) => {
-      entries.forEach((entry) => {
+      entries.forEach(entry => {
         if (entry.intersectionRatio === 0) {
           setShowButton(true);
         } else {
@@ -154,7 +154,7 @@ const App = (props) => {
     const buttonObserver = new IntersectionObserver(buttonObserverCallback, {
       root: null,
       rootMargin: `0px 0px ${window.innerHeight}px`,
-      threshold: 0.0,
+      threshold: 0.0
     });
 
     buttonObserver.observe(muteEl.current);
@@ -162,7 +162,7 @@ const App = (props) => {
     // For IE11 support let's invert colors manually
     // instead of useing CSS filter: invert(1)
     const html = document.querySelector("html");
-    if (html.classList.contains("is-dark-mode")) {
+    if (html?.classList.contains("is-dark-mode")) {
       setIsDarkMode(true);
     }
 
@@ -181,11 +181,11 @@ const App = (props) => {
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
       rootMargin: `-${window.innerHeight * OBSERVATION_MARGIN_RATIO}px 0px`,
-      threshold: OBSERVATION_RATIO,
+      threshold: OBSERVATION_RATIO
     });
 
     // Add video players to our observer
-    videos.forEach((video) => {
+    videos.forEach(video => {
       observer.observe(video.parentNode);
 
       // Initially set videos to muted, in case not ambient
@@ -208,13 +208,13 @@ const App = (props) => {
       eventListener = () => {
         setIsMuted(!stateRef.current);
 
-        videos.forEach((vid) => {
+        videos.forEach(vid => {
           if (vid.api.isMuted()) vid.api.setMuted(false);
           else if (!vid.api.isMuted()) vid.api.setMuted(true);
         });
 
         if (typeof freezeFrameVideos !== "undefined")
-          freezeFrameVideos.forEach((video) => {
+          freezeFrameVideos.forEach(video => {
             video.muted = !video.muted;
           });
       };
@@ -222,15 +222,13 @@ const App = (props) => {
       // Make "fake-ambient" videos support mute
       videoMuteButton = video.querySelector(".VideoControls-mute");
 
-      if (videoMuteButton)
-        videoMuteButton.addEventListener("click", eventListener);
+      if (videoMuteButton) videoMuteButton.addEventListener("click", eventListener);
     });
 
     return () => {
-      if (videoMuteButton)
-        videoMuteButton.removeEventListener("click", eventListener);
+      if (videoMuteButton) videoMuteButton.removeEventListener("click", eventListener);
 
-      videos.forEach((video) => {
+      videos.forEach(video => {
         observer.unobserve(video);
       });
     };
@@ -245,7 +243,6 @@ const App = (props) => {
       <div className={`${styles.text} ${isMuted && styles.hidden}`}>
         KEEP SCROLLING TO READ THE STORY
       </div>
-
       <div className={`${styles.text} ${!isMuted && styles.hidden}`}>
         THIS STORY IS BEST EXPERIENCED WITH SOUND ON
       </div>
@@ -254,8 +251,7 @@ const App = (props) => {
         className={styles.enableAudio}
         id="toggle-global-audio-button"
         onClick={muteToggle}
-        ref={muteEl}
-      >
+        ref={muteEl}>
         {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 
@@ -263,8 +259,7 @@ const App = (props) => {
         <button
           id="toggle-global-audio-float"
           className={`${styles.audioFloat} ${!showButton && styles.hidden}`}
-          onClick={muteToggle}
-        >
+          onClick={muteToggle}>
           {isMuted ? <img src={mute} /> : <img src={unmute} />}
         </button>
       </div>

@@ -1,5 +1,5 @@
 {
   "@abcnews/aunty": {
-    "template": "preact"
+    "template": "react"
   }
 }
