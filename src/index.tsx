@@ -15,6 +15,7 @@ function renderApp() {}
 
 async function init() {
   await whenOdysseyLoaded;
+
   const [appMountEl] = selectMounts("audio-visual-plugin-mount");
   console.log(appMountEl);
 

@@ -1,5 +1,3 @@
-// import { h, Component } from "preact";
-// import { useState, useEffect, useRef } from "preact/hooks";
 import React, { useState, useEffect, useRef } from "react";
 
 import styles from "./styles.scss";
@@ -20,11 +18,11 @@ const SECONDS_BEFORE_UNLOAD = 30;
 const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
-  const [videos, setVideos] = useState();
-  const [freezeFrameVideos, setFreezeFrameVideos] = useState();
+  const [videos, setVideos] = useState<any[]>([]);
+  const [freezeFrameVideos, setFreezeFrameVideos] = useState<any[]>();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const muteEl = useRef(null);
+  const muteEl = useRef<any>(null);
 
   // Used to access state in eventListeners
   const stateRef = useRef(isMuted);
@@ -132,7 +130,8 @@ const App = props => {
   // Init effect run on mount
   useEffect(() => {
     // Select all Odyssey video player div elements
-    setVideos(document.querySelectorAll(".VideoPlayer"));
+    const nodeList = Array.from(document.querySelectorAll(".VideoPlayer"));
+    setVideos(nodeList);
 
     // Wait for FreezeFrame to load
     // TODO: find a better way to do this
@@ -213,6 +212,7 @@ const App = props => {
           else if (!vid.api.isMuted()) vid.api.setMuted(true);
         });
 
+        // Is is probably not used anywhere anymore (maybe remove)
         if (typeof freezeFrameVideos !== "undefined")
           freezeFrameVideos.forEach(video => {
             video.muted = !video.muted;
@@ -241,10 +241,10 @@ const App = props => {
       </div>
 
       <div className={`${styles.text} ${isMuted && styles.hidden}`}>
-        KEEP SCROLLING TO READ THE STORY
+        Keep scrolling to read the story
       </div>
       <div className={`${styles.text} ${!isMuted && styles.hidden}`}>
-        THIS STORY IS BEST EXPERIENCED WITH SOUND ON
+        This story is best experienced with sound on
       </div>
 
       <button
