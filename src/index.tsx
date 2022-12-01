@@ -11,8 +11,6 @@ let root;
 let appProps;
 const PROJECT_NAME = "odyssey-audio-visual-plugin";
 
-function renderApp() {}
-
 async function init() {
   await whenOdysseyLoaded;
 

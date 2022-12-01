@@ -19,7 +19,6 @@ const App = props => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState<any[]>([]);
-  const [freezeFrameVideos, setFreezeFrameVideos] = useState<any[]>();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const muteEl = useRef<any>(null);
@@ -38,11 +37,6 @@ const App = props => {
     });
 
     setIsMuted(!isMuted);
-
-    // Unmute freezeframe videos
-    // freezeFrameVideos.forEach(video => {
-    //   video.muted = !isMuted;
-    // });
   };
 
   // This is done when element observed
@@ -79,7 +73,7 @@ const App = props => {
     // Fade in
     if (videoEl.volume < 1.0) {
       let vol = videoEl.volume;
-      let interval = 200;
+      const interval = 200;
 
       videoEl.fadeInIntervalId = setInterval(function () {
         // Reduce volume as long as it is above 0
@@ -103,7 +97,7 @@ const App = props => {
 
     if (videoEl.volume > 0.0) {
       let vol = videoEl.volume;
-      let interval = 200;
+      const interval = 200;
 
       videoEl.fadeOutIntervalId = setInterval(function () {
         // Reduce volume as long as it is above 0
@@ -132,12 +126,6 @@ const App = props => {
     // Select all Odyssey video player div elements
     const nodeList = Array.from(document.querySelectorAll(".VideoPlayer"));
     setVideos(nodeList);
-
-    // Wait for FreezeFrame to load
-    // TODO: find a better way to do this
-    // setTimeout(() => {
-    //   setFreezeFrameVideos(document.querySelectorAll(".AC_W_aNL video"));
-    // }, 1000);
 
     // Showing and hiding the floating mute button
     const buttonObserverCallback = (entries, observer) => {
@@ -211,12 +199,6 @@ const App = props => {
           if (vid.api.isMuted()) vid.api.setMuted(false);
           else if (!vid.api.isMuted()) vid.api.setMuted(true);
         });
-
-        // Is is probably not used anywhere anymore (maybe remove)
-        if (typeof freezeFrameVideos !== "undefined")
-          freezeFrameVideos.forEach(video => {
-            video.muted = !video.muted;
-          });
       };
 
       // Make "fake-ambient" videos support mute
