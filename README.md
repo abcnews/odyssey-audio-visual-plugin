@@ -12,6 +12,8 @@ Add the `odyssey-audio-visual-plugin` JavaScript to your article in CoreMedia (c
 
 Add `#audio-visual-plugin-mount` on its own line where you want the "enable audio" button to appear.
 
+As the page scrolls videos will automatically play and audio will fade between the videos.
+
 ## Authors
 
 - Joshua Byrd ([phocks@gmail.com](mailto:phocks@gmail.com))
