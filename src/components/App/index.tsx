@@ -15,7 +15,7 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 // How many seconds before we unload videos
 const SECONDS_BEFORE_UNLOAD = 30;
 
-const App = props => {
+const App = () => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState<any[]>([]);
