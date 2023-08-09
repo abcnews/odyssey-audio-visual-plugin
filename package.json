@@ -17,11 +17,11 @@
 		"deploy": "aunty deploy"
 	},
 	"devDependencies": {
-		"@abcnews/aunty": "^13.2.2",
+		"@abcnews/aunty": "^14.0.0",
 		"@types/react-dom": "^18.0.9",
 		"@types/webpack-env": "^1.18.0",
-		"@typescript-eslint/eslint-plugin": "^5.45.0",
-		"@typescript-eslint/parser": "^5.45.0",
+		"@typescript-eslint/eslint-plugin": "^6.3.0",
+		"@typescript-eslint/parser": "^6.3.0",
 		"eslint": "^8.28.0",
 		"eslint-plugin-react": "^7.31.11"
 	},
@@ -29,8 +29,7 @@
 		"@abcnews/alternating-case-to-object": "^3.0.2",
 		"@abcnews/dev-proxy": "^1.2.1",
 		"@abcnews/env-utils": "^3.0.1",
-		"@abcnews/mount-utils": "^2.0.0",
-		"intersection-observer": "^0.7.0",
+		"@abcnews/mount-utils": "^3.0.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0"
 	}
