@@ -1,5 +1,3 @@
-import "intersection-observer";
-import "./polyfills";
 import acto from "@abcnews/alternating-case-to-object";
 import { proxy } from "@abcnews/dev-proxy";
 import { whenOdysseyLoaded } from "@abcnews/env-utils";
