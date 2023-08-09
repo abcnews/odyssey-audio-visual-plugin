@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@abcnews/alternating-case-to-object": "^3.0.2",
+		"@abcnews/dev-proxy": "^1.2.1",
 		"@abcnews/env-utils": "^3.0.1",
 		"@abcnews/mount-utils": "^2.0.0",
 		"intersection-observer": "^0.7.0",

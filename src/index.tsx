@@ -1,6 +1,7 @@
 import "intersection-observer";
 import "./polyfills";
 import acto from "@abcnews/alternating-case-to-object";
+import { proxy } from "@abcnews/dev-proxy";
 import { whenOdysseyLoaded } from "@abcnews/env-utils";
 import { getMountValue, selectMounts } from "@abcnews/mount-utils";
 import React from "react";
@@ -24,7 +25,7 @@ async function init() {
   }
 }
 
-init();
+proxy(PROJECT_NAME).then(init);
 
 if (module.hot) {
   module.hot.accept("./components/App", () => {
