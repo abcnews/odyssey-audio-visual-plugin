@@ -14,7 +14,6 @@ async function init() {
   await whenOdysseyLoaded;
 
   const [appMountEl] = selectMounts("audio-visual-plugin-mount");
-  console.log(appMountEl);
 
   if (appMountEl) {
     root = createRoot(appMountEl);
