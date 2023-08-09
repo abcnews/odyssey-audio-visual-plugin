@@ -15,6 +15,8 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 // How many seconds before we unload videos
 const SECONDS_BEFORE_UNLOAD = 30;
 
+const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer";
+
 const App = () => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
@@ -42,11 +44,13 @@ const App = () => {
   // This is done when element observed
   const observerCallback = (entries, observer) => {
     entries.forEach(entry => {
+      const videoPlayer = entry.target.querySelector(VIDEO_PLAYER_QUERY_SELECTOR);
+      if (!videoPlayer) return;
       if (entry.intersectionRatio > OBSERVATION_RATIO) {
-        fadeInVideoEl(entry.target.firstChild);
+        fadeInVideoEl(videoPlayer);
       } else {
         // Observe going out of view
-        fadeOutVideoEl(entry.target.firstChild);
+        fadeOutVideoEl(videoPlayer);
       }
     });
   };
@@ -124,7 +128,7 @@ const App = () => {
   // Init effect run on mount
   useEffect(() => {
     // Select all Odyssey video player div elements
-    const nodeList = Array.from(document.querySelectorAll(".VideoPlayer"));
+    const nodeList = Array.from(document.querySelectorAll(VIDEO_PLAYER_QUERY_SELECTOR));
     setVideos(nodeList);
 
     // Showing and hiding the floating mute button
