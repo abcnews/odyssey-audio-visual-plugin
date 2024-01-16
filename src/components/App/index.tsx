@@ -154,7 +154,7 @@ const App = () => {
   }, [videos]);
 
   return (
-    <div className={styles.root}>
+    <div data-id="odyssey-audio-visual-plugin" className={styles.root} data-muted={isMuted}>
       <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
         {isDarkMode ? <img src={airpodsInverted} /> : <img src={airpods} />}
       </div>
