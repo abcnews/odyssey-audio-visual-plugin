@@ -3,9 +3,6 @@
   font-family: ABCSans, Helvetica, Arial, sans-serif;
 
   .icon {
-    -webkit-transition: opacity ease-out 0.5s;
-    -moz-transition: opacity ease-out 0.5s;
-    -o-transition: opacity ease-out 0.5s;
     transition: opacity ease-out 0.5s;
     opacity: 1;
   }
@@ -20,9 +17,6 @@
     margin-left: auto;
     margin-right: auto;
     font-size: 1.3em;
-    -webkit-transition: opacity ease-out 0.5s;
-    -moz-transition: opacity ease-out 0.5s;
-    -o-transition: opacity ease-out 0.5s;
     transition: opacity ease-out 0.5s;
     opacity: 1;
     text-transform: uppercase;
@@ -40,9 +34,6 @@
     border-radius: 3px;
     letter-spacing: 0.1em;
     cursor: pointer;
-    -webkit-transition: background ease-out 0.5s;
-    -moz-transition: background ease-out 0.5s;
-    -o-transition: background ease-out 0.5s;
     transition: background ease-out 0.5s;
     margin: 2em 0;
   }
@@ -66,14 +57,10 @@
   font-size: 1em;
   letter-spacing: 0.1em;
   cursor: pointer;
-  -webkit-transition: all ease-out 0.5s;
-  -moz-transition: all ease-out 0.5s;
-  -o-transition: all ease-out 0.5s;
   transition: all ease-out 0.5s;
 
   opacity: 0.8;
   border-radius: 3px !important;
-  // margin: 2em 0;
 }
 
 .audio-float:hover {
@@ -91,11 +78,6 @@
 }
 
 :global {
-  // This is now handled in App
-  // .is-dark-mode :local(.icon) img {
-  //   filter: invert(1);
-  // }
-
   .is-dark-mode :local(.text) {
     color: white;
   }
