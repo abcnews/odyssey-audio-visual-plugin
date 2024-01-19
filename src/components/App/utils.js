@@ -1,9 +1,57 @@
 // How many seconds before we unload videos
 const SECONDS_BEFORE_UNLOAD = 30;
 
+function playVideo(video) {
+  if (video.api) {
+    return video.api.play();
+  } else {
+    return video.play();
+  }
+}
+
+function getIsPaused(video) {
+  if (video.api) {
+    return video.api.isPaused();
+  } else {
+    return getVideoEl(video).paused;
+  }
+}
+
+export function getIsMuted(video) {
+  if (video.api) {
+    return video.api.isMuted();
+  } else {
+    return !!getVideoEl(video).muted;
+  }
+}
+
+export function pauseVideo(video) {
+  if (video.api) {
+    video.api.pause();
+  } else {
+    getVideoEl(video).pause();
+  }
+}
+
+export const getVideoEl = (video) => {
+  if (video.tagName === 'VIDEO') {
+    return video;
+  } else {
+    return video.querySelector("video")
+  }
+}
+
+export function setMuted(video, isMuted) {
+  if (video.api) {
+    video.api.setMuted(isMuted);
+  } else {
+    getVideoEl(video).muted = isMuted;
+  }
+}
+
 export const fadeInVideoEl = videoPlayer => {
   // Get the actual video element
-  const videoEl = videoPlayer.querySelector("video");
+  const videoEl = getVideoEl(videoPlayer);
 
   // If video has been unloaded we need to load it up again
   if (typeof videoEl.dataset.src !== "undefined") {
@@ -18,7 +66,7 @@ export const fadeInVideoEl = videoPlayer => {
   clearInterval(videoEl.fadeOutIntervalId);
 
   // Play the video
-  if (videoPlayer.api.isPaused()) videoPlayer.api.play();
+  if (getIsPaused(videoPlayer)) playVideo(videoPlayer);
 
   // Fade in
   if (videoEl.volume < 1.0) {
@@ -40,7 +88,7 @@ export const fadeInVideoEl = videoPlayer => {
 };
 
 export const fadeOutVideoEl = videoPlayer => {
-  const videoEl = videoPlayer.querySelector("video");
+  const videoEl = getVideoEl(videoPlayer);
 
   // If we're already fading in, then stop
   clearInterval(videoEl.fadeInIntervalId);
@@ -57,7 +105,7 @@ export const fadeOutVideoEl = videoPlayer => {
         videoEl.volume = vol.toFixed(2);
       } else {
         // Stop the setInterval when 0 is reached
-        videoPlayer.api.pause();
+        pauseVideo(videoPlayer);
         clearInterval(videoEl.fadeOutIntervalId);
 
         // After a long while not playing we unload the vids

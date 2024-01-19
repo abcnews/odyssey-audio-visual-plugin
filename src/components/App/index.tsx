@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 
-import { fadeInVideoEl, fadeOutVideoEl } from './utils.js'
+import { setMuted, getIsMuted, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
 
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
@@ -14,7 +14,12 @@ const OBSERVATION_RATIO = 0.0;
 // Controls proportion of screen to cut observer margin
 const OBSERVATION_MARGIN_RATIO = 0.35;
 
-const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer";
+/**
+ * Supported video types.
+ * 1. Odyssey video player root
+ * 2. Any <video> element inside a `class="oavp-video"` parent
+ */
+const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer,.oavp-video video";
 
 // This is done when element observed
 const observerCallback = (entries, observer) => {
@@ -42,14 +47,21 @@ const App = () => {
   // Used to access state in eventListeners
   const stateRef = useRef(isMuted);
 
+  /** find and return compatible videos + update observers */
+  const scanForVideos = () => {
+    const nodeList = Array.from(document.querySelectorAll(VIDEO_PLAYER_QUERY_SELECTOR));
+    setVideos(nodeList);
+    return nodeList;
+  }
+
   const setIsMuted = data => {
     stateRef.current = data;
     _setIsMuted(data);
   };
 
   const muteToggle = event => {
-    videos.forEach(video => {
-      video.api.setMuted(!isMuted);
+    scanForVideos().forEach(video => {
+      setMuted(video, !isMuted);
     });
 
     setIsMuted(!isMuted);
@@ -57,10 +69,7 @@ const App = () => {
 
   // Init effect run on mount
   useEffect(() => {
-    // Select all Odyssey video player div elements
-    const nodeList = Array.from(document.querySelectorAll(VIDEO_PLAYER_QUERY_SELECTOR));
-    setVideos(nodeList);
-
+    scanForVideos();
     // Showing and hiding the floating mute button
     const buttonObserverCallback = (entries, observer) => {
       entries.forEach(entry => {
@@ -112,12 +121,10 @@ const App = () => {
 
       // Initially set videos to muted, in case not ambient
       // And pause
-      video.api.setMuted(isMuted);
-      // video.api.pause();
+      setMuted(video, isMuted)
 
       // Set volume to zero so we can fade in
-      const videoEl = video.querySelector("video");
-      videoEl.volume = 0.0;
+      getVideoEl(video).volume = 0.0;
 
       // Also set preload to auto to help playback
       // DON'T DO THIS OR BAD THINGS WILL HAPPEN ON MOBILE WITH LOTS OF VIDS
@@ -125,14 +132,15 @@ const App = () => {
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-      video.api.isAmbient = true;
+      if (video.api) {
+        video.api.isAmbient = true;
+      }
 
       eventListener = () => {
         setIsMuted(!stateRef.current);
 
         videos.forEach(vid => {
-          if (vid.api.isMuted()) vid.api.setMuted(false);
-          else if (!vid.api.isMuted()) vid.api.setMuted(true);
+          setMuted(vid, !getIsMuted(vid))
         });
       };
 
@@ -146,7 +154,12 @@ const App = () => {
       if (videoMuteButton) videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
-        observer.unobserve(video);
+        try {
+          observer.unobserve(video);
+        } catch (e) {
+          // Sometimes videos disappear before we can unobserve them, especially
+          // during development
+        }
       });
 
       observer.disconnect();
@@ -159,11 +172,11 @@ const App = () => {
         {isDarkMode ? <img src={airpodsInverted} /> : <img src={airpods} />}
       </div>
 
-      <div className={`${styles.text} ${isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${styles.textContinueReading} ${isMuted && styles.hidden}`}>
         Keep scrolling to read the story
       </div>
-      <div className={`${styles.text} ${!isMuted && styles.hidden}`}>
-        This story is best experienced with sound on
+      <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted && styles.hidden}`}>
+        This story is best<br />experienced with sound on
       </div>
 
       <button
