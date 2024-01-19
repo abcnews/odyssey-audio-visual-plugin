@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-
+import { h } from 'preact';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import { setMuted, getIsMuted, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
 
 import styles from "./styles.scss";
@@ -176,7 +176,7 @@ const App = () => {
         Keep scrolling to read the story
       </div>
       <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted && styles.hidden}`}>
-        This story is best<br />experienced with sound on
+        This story is best<br />experienced with sound on!!!!!
       </div>
 
       <button
