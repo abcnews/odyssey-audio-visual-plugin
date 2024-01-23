@@ -176,7 +176,7 @@ const App = () => {
         Keep scrolling to read the story
       </div>
       <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted && styles.hidden}`}>
-        This story is best<br />experienced with sound on!!!!!
+        This story is best<br />experienced with sound on
       </div>
 
       <button
