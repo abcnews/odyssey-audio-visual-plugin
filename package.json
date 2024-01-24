@@ -1,36 +1,33 @@
 {
-	"name": "odyssey-audio-visual-plugin",
-	"version": "2.1.0",
-	"description": "A project generated from aunty's preact project template.",
-	"license": "MIT",
-	"private": true,
-	"contributors": [
-		"Joshua Byrd <phocks@gmail.com>"
-	],
-	"aunty": {
-		"type": "react"
-	},
-	"scripts": {
-		"start": "aunty serve",
-		"test": "aunty test",
-		"build": "aunty build",
-		"deploy": "aunty deploy"
-	},
-	"devDependencies": {
-		"@abcnews/aunty": "^14.0.0",
-		"@types/react-dom": "^18.0.9",
-		"@types/webpack-env": "^1.18.0",
-		"@typescript-eslint/eslint-plugin": "^6.3.0",
-		"@typescript-eslint/parser": "^6.3.0",
-		"eslint": "^8.28.0",
-		"eslint-plugin-react": "^7.31.11"
-	},
-	"dependencies": {
-		"@abcnews/alternating-case-to-object": "^3.0.2",
-		"@abcnews/dev-proxy": "^1.2.1",
-		"@abcnews/env-utils": "^3.0.1",
-		"@abcnews/mount-utils": "^3.0.0",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
-	}
+  "name": "odyssey-audio-visual-plugin",
+  "version": "2.1.0",
+  "description": "A plugin for ABC's Odyssey Story Format that asks for user permission to play audio.",
+  "license": "MIT",
+  "private": true,
+  "contributors": [
+    "Joshua Byrd <phocks@gmail.com>"
+  ],
+  "aunty": {
+    "type": "preact"
+  },
+  "scripts": {
+    "start": "aunty serve",
+    "test": "aunty test",
+    "build": "aunty build",
+    "deploy": "aunty deploy"
+  },
+  "devDependencies": {
+    "@abcnews/aunty": "^15.0.2",
+    "@types/jest": "^29.5.11",
+    "@types/webpack-env": "^1.18.4",
+    "html-looks-like": "^1.0.3",
+    "preact-render-to-string": "^6.3.1"
+  },
+  "dependencies": {
+    "@abcnews/alternating-case-to-object": "^3.1.1",
+    "@abcnews/dev-proxy": "^1.2.1",
+    "@abcnews/env-utils": "^3.1.0",
+    "@abcnews/mount-utils": "^3.0.0",
+    "preact": "^10.19.3"
+  }
 }

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import { h } from 'preact';
+import { useState, useEffect, useRef } from 'preact/hooks';
+import { setMuted, getIsMuted, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
 
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
@@ -12,10 +14,27 @@ const OBSERVATION_RATIO = 0.0;
 // Controls proportion of screen to cut observer margin
 const OBSERVATION_MARGIN_RATIO = 0.35;
 
-// How many seconds before we unload videos
-const SECONDS_BEFORE_UNLOAD = 30;
+/**
+ * Supported video types.
+ * 1. Odyssey video player root
+ * 2. Any <video> element inside a `class="oavp-video"` parent
+ */
+const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer,.oavp-video video";
 
-const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer";
+// This is done when element observed
+const observerCallback = (entries, observer) => {
+  entries.forEach(entry => {
+    const videoPlayer = entry.target.querySelector(VIDEO_PLAYER_QUERY_SELECTOR);
+    if (!videoPlayer) return;
+    if (entry.intersectionRatio > OBSERVATION_RATIO) {
+      fadeInVideoEl(videoPlayer);
+    } else {
+      // Observe going out of view
+      fadeOutVideoEl(videoPlayer);
+    }
+  });
+};
+
 
 const App = () => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
@@ -28,109 +47,29 @@ const App = () => {
   // Used to access state in eventListeners
   const stateRef = useRef(isMuted);
 
+  /** find and return compatible videos + update observers */
+  const scanForVideos = () => {
+    const nodeList = Array.from(document.querySelectorAll(VIDEO_PLAYER_QUERY_SELECTOR));
+    setVideos(nodeList);
+    return nodeList;
+  }
+
   const setIsMuted = data => {
     stateRef.current = data;
     _setIsMuted(data);
   };
 
   const muteToggle = event => {
-    videos.forEach(video => {
-      video.api.setMuted(!isMuted);
+    scanForVideos().forEach(video => {
+      setMuted(video, !isMuted);
     });
 
     setIsMuted(!isMuted);
   };
 
-  // This is done when element observed
-  const observerCallback = (entries, observer) => {
-    entries.forEach(entry => {
-      const videoPlayer = entry.target.querySelector(VIDEO_PLAYER_QUERY_SELECTOR);
-      if (!videoPlayer) return;
-      if (entry.intersectionRatio > OBSERVATION_RATIO) {
-        fadeInVideoEl(videoPlayer);
-      } else {
-        // Observe going out of view
-        fadeOutVideoEl(videoPlayer);
-      }
-    });
-  };
-
-  const fadeInVideoEl = videoPlayer => {
-    // Get the actual video element
-    const videoEl = videoPlayer.querySelector("video");
-
-    // If video has been unloaded we need to load it up again
-    if (typeof videoEl.dataset.src !== "undefined") {
-      videoEl.src = videoEl.dataset.src;
-      videoEl.load();
-      videoEl.removeAttribute("data-src");
-    }
-
-    // If we're set to unload, don't do it
-    clearTimeout(videoEl.unloaderId);
-    // If we're already fading out, then stop
-    clearInterval(videoEl.fadeOutIntervalId);
-
-    // Play the video
-    if (videoPlayer.api.isPaused()) videoPlayer.api.play();
-
-    // Fade in
-    if (videoEl.volume < 1.0) {
-      let vol = videoEl.volume;
-      const interval = 200;
-
-      videoEl.fadeInIntervalId = setInterval(function () {
-        // Reduce volume as long as it is above 0
-        if (vol < 1.0) {
-          vol += 0.4;
-          if (vol > 1.0) vol = 1.0;
-          videoEl.volume = vol.toFixed(2);
-        } else {
-          // Stop the setInterval when 0 is reached
-          clearInterval(videoEl.fadeInIntervalId);
-        }
-      }, interval);
-    }
-  };
-
-  const fadeOutVideoEl = videoPlayer => {
-    const videoEl = videoPlayer.querySelector("video");
-
-    // If we're already fading in, then stop
-    clearInterval(videoEl.fadeInIntervalId);
-
-    if (videoEl.volume > 0.0) {
-      let vol = videoEl.volume;
-      const interval = 200;
-
-      videoEl.fadeOutIntervalId = setInterval(function () {
-        // Reduce volume as long as it is above 0
-        if (vol > 0) {
-          vol -= 0.1;
-          if (vol < 0.0) vol = 0.0;
-          videoEl.volume = vol.toFixed(2);
-        } else {
-          // Stop the setInterval when 0 is reached
-          videoPlayer.api.pause();
-          clearInterval(videoEl.fadeOutIntervalId);
-
-          // After a long while not playing we unload the vids
-          videoEl.unloaderId = setTimeout(() => {
-            videoEl.dataset.src = videoEl.src;
-            videoEl.removeAttribute("src"); // empty source
-            videoEl.load();
-          }, SECONDS_BEFORE_UNLOAD * 1000);
-        }
-      }, interval);
-    }
-  };
-
   // Init effect run on mount
   useEffect(() => {
-    // Select all Odyssey video player div elements
-    const nodeList = Array.from(document.querySelectorAll(VIDEO_PLAYER_QUERY_SELECTOR));
-    setVideos(nodeList);
-
+    scanForVideos();
     // Showing and hiding the floating mute button
     const buttonObserverCallback = (entries, observer) => {
       entries.forEach(entry => {
@@ -159,6 +98,7 @@ const App = () => {
 
     return () => {
       buttonObserver.unobserve(muteEl.current);
+      buttonObserver.disconnect();
     };
   }, []);
 
@@ -181,12 +121,10 @@ const App = () => {
 
       // Initially set videos to muted, in case not ambient
       // And pause
-      video.api.setMuted(isMuted);
-      // video.api.pause();
+      setMuted(video, isMuted)
 
       // Set volume to zero so we can fade in
-      const videoEl = video.querySelector("video");
-      videoEl.volume = 0.0;
+      getVideoEl(video).volume = 0.0;
 
       // Also set preload to auto to help playback
       // DON'T DO THIS OR BAD THINGS WILL HAPPEN ON MOBILE WITH LOTS OF VIDS
@@ -194,14 +132,15 @@ const App = () => {
 
       // Trick non-ambient videos into playing more
       // than 1 video at a time
-      video.api.isAmbient = true;
+      if (video.api) {
+        video.api.isAmbient = true;
+      }
 
       eventListener = () => {
         setIsMuted(!stateRef.current);
 
         videos.forEach(vid => {
-          if (vid.api.isMuted()) vid.api.setMuted(false);
-          else if (!vid.api.isMuted()) vid.api.setMuted(true);
+          setMuted(vid, !getIsMuted(vid))
         });
       };
 
@@ -215,22 +154,29 @@ const App = () => {
       if (videoMuteButton) videoMuteButton.removeEventListener("click", eventListener);
 
       videos.forEach(video => {
-        observer.unobserve(video);
+        try {
+          observer.unobserve(video);
+        } catch (e) {
+          // Sometimes videos disappear before we can unobserve them, especially
+          // during development
+        }
       });
+
+      observer.disconnect();
     };
   }, [videos]);
 
   return (
-    <div className={styles.root}>
+    <div data-id="odyssey-audio-visual-plugin" className={styles.root} data-muted={isMuted}>
       <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
         {isDarkMode ? <img src={airpodsInverted} /> : <img src={airpods} />}
       </div>
 
-      <div className={`${styles.text} ${isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${styles.textContinueReading} ${isMuted && styles.hidden}`}>
         Keep scrolling to read the story
       </div>
-      <div className={`${styles.text} ${!isMuted && styles.hidden}`}>
-        This story is best experienced with sound on
+      <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted && styles.hidden}`}>
+        This story is best<br />experienced with sound on
       </div>
 
       <button
