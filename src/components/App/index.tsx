@@ -22,7 +22,7 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer,.oavp-video video";
 
 // This is done when element observed
-const observerCallback = (entries, observer) => {
+const intersectionObserverCallback = (entries, observer) => {
   entries.forEach(entry => {
     const videoPlayer = entry.target.querySelector(VIDEO_PLAYER_QUERY_SELECTOR);
     if (!videoPlayer) return;
@@ -34,6 +34,28 @@ const observerCallback = (entries, observer) => {
     }
   });
 };
+
+/**
+ * When an Odyssey contains multiple videos in blocks, intended to crossfade
+ * between them, only the first video is observed, because the rest are
+ * on-screen but invisible.
+ *
+ * Instead we check whether they're visible using a mutation observer on the
+ * class property.
+ */
+const mutationObserverCallback = (mutationList) => {
+  const fadeInClassName = 'transition-in'
+  mutationList.filter(mutation => mutation.target.classList.contains(fadeInClassName) && !mutation.oldValue.includes(fadeInClassName)).forEach(mutation => {
+    fadeInVideoEl(mutation.target);
+  });
+
+  const fadeOutClassName = 'transition-out'
+  mutationList.filter(mutation => mutation.target.classList.contains(fadeOutClassName) && !mutation.oldValue.includes(fadeOutClassName)).forEach(mutation => {
+    fadeOutVideoEl(mutation.target);
+  });
+
+
+}
 
 
 const App = () => {
@@ -109,15 +131,20 @@ const App = () => {
 
     if (typeof videos === "undefined") return;
 
-    const observer = new IntersectionObserver(observerCallback, {
+    // observe when videos scroll onto the screen
+    const intersectionObserver = new IntersectionObserver(intersectionObserverCallback, {
       root: null,
       rootMargin: `-${window.innerHeight * OBSERVATION_MARGIN_RATIO}px 0px`,
       threshold: OBSERVATION_RATIO
     });
 
-    // Add video players to our observer
+    // observe for when videos are crossfaded in
+    const mutationObserver = new MutationObserver(mutationObserverCallback);
+
+    // Add video players to our intersectionObserver
     videos.forEach(video => {
-      observer.observe(video.parentNode);
+      intersectionObserver.observe(video.parentNode);
+      mutationObserver.observe(video, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
 
       // Initially set videos to muted, in case not ambient
       // And pause
@@ -155,14 +182,16 @@ const App = () => {
 
       videos.forEach(video => {
         try {
-          observer.unobserve(video);
+          intersectionObserver.unobserve(video);
+          mutationObserver.unobserve(video)
         } catch (e) {
           // Sometimes videos disappear before we can unobserve them, especially
           // during development
         }
       });
 
-      observer.disconnect();
+      intersectionObserver.disconnect();
+      mutationObserver.disconnect();
     };
   }, [videos]);
 
