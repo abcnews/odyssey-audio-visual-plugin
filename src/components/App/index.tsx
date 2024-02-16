@@ -180,16 +180,6 @@ const App = () => {
     return () => {
       if (videoMuteButton) videoMuteButton.removeEventListener("click", eventListener);
 
-      videos.forEach(video => {
-        try {
-          intersectionObserver.unobserve(video);
-          mutationObserver.unobserve(video)
-        } catch (e) {
-          // Sometimes videos disappear before we can unobserve them, especially
-          // during development
-        }
-      });
-
       intersectionObserver.disconnect();
       mutationObserver.disconnect();
     };
