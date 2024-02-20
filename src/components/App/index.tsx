@@ -35,6 +35,8 @@ const intersectionObserverCallback = (entries, observer) => {
   });
 };
 
+/** Class name for currently active block media */
+const CLASS_ACTIVE = 'play-active';
 /**
  * When an Odyssey contains multiple videos in blocks, intended to crossfade
  * between them, only the first video is observed, because the rest are
@@ -44,17 +46,20 @@ const intersectionObserverCallback = (entries, observer) => {
  * class property.
  */
 const mutationObserverCallback = (mutationList) => {
-  const fadeInClassName = 'transition-in'
-  mutationList.filter(mutation => mutation.target.classList.contains(fadeInClassName) && !mutation.oldValue.includes(fadeInClassName)).forEach(mutation => {
-    fadeInVideoEl(mutation.target);
+  mutationList.forEach(({ target, oldValue }) => {
+    const isActive = target.classList.contains(CLASS_ACTIVE);
+    const wasActive = oldValue.includes(CLASS_ACTIVE);
+
+    // fade this vid in
+    if (isActive && !wasActive) {
+      return fadeInVideoEl(target);
+    }
+
+    // Fade this vid out
+    if (!isActive && wasActive) {
+      return fadeOutVideoEl(target);
+    }
   });
-
-  const fadeOutClassName = 'transition-out'
-  mutationList.filter(mutation => mutation.target.classList.contains(fadeOutClassName) && !mutation.oldValue.includes(fadeOutClassName)).forEach(mutation => {
-    fadeOutVideoEl(mutation.target);
-  });
-
-
 }
 
 
