@@ -114,5 +114,6 @@ export const fadeOutVideoEl = videoPlayer => {
         clearInterval(intervalId);
       }
     }, interval);
+    videoEl.fadeInIntervalId = intervalId;
   }
 };
