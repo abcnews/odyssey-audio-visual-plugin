@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { useState, useEffect, useRef } from 'preact/hooks';
-import { setMuted, getIsMuted, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
-
+import { setMuted, getIsMuted, pauseVideo, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
+import { isMuted } from './state.js';
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 import airpodsInverted from "./airpods-inverted.svg";
@@ -63,15 +63,11 @@ const mutationObserverCallback = (mutationList) => {
 }
 
 const App = () => {
-  const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState<any[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const muteEl = useRef<any>(null);
-
-  // Used to access state in eventListeners
-  const stateRef = useRef(isMuted);
 
   /** find and return compatible videos + update observers */
   const scanForVideos = () => {
@@ -80,24 +76,25 @@ const App = () => {
     return nodeList;
   }
 
-  const setIsMuted = data => {
-    stateRef.current = data;
-    _setIsMuted(data);
-  };
 
-  const muteToggle = event => {
-    scanForVideos().forEach(video => {
-      setMuted(video, !isMuted);
-    });
+  const muteToggle = () => {
+    const isMutedNow = !isMuted.value;
+
+    if (isMutedNow) {
+      scanForVideos().forEach(video => {
+        setMuted(video, isMutedNow);
+      });
+    }
 
     // Fade in the currently on-screen Odyssey video, otherwise it will be
     // unmuted with a volume of 0
     const activeVideo = document.querySelector(`.${CLASS_ACTIVE}`);
+
     if (activeVideo) {
       fadeInVideoEl(activeVideo);
     }
 
-    setIsMuted(!isMuted);
+    isMuted.value = isMutedNow;
   };
 
   // Init effect run on mount
@@ -170,9 +167,7 @@ const App = () => {
 
       // Set volume to zero so we can fade in
       getVideoEl(video).volume = 0.0;
-
-      // Also set preload to auto to help playback
-      // DON'T DO THIS OR BAD THINGS WILL HAPPEN ON MOBILE WITH LOTS OF VIDS
+      // Do not set preload on videos, otherwise mobile devices will try to pre-download the entire world.
       // videoEl.preload = "auto";
 
       // Trick non-ambient videos into playing more
@@ -182,7 +177,7 @@ const App = () => {
       }
 
       eventListener = () => {
-        setIsMuted(!stateRef.current);
+        isMuted.value = (!isMuted.value);
 
         videos.forEach(vid => {
           setMuted(vid, !getIsMuted(vid))
@@ -204,15 +199,15 @@ const App = () => {
   }, [videos]);
 
   return (
-    <div data-id="odyssey-audio-visual-plugin" className={styles.root} data-muted={isMuted}>
-      <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
+    <div data-id="odyssey-audio-visual-plugin" className={styles.root} data-muted={isMuted.value}>
+      <div className={`${styles.icon}  ${!isMuted.value && styles.hidden}`}>
         {isDarkMode ? <img src={airpodsInverted} /> : <img src={airpods} />}
       </div>
 
-      <div className={`${styles.text} ${styles.textContinueReading} ${isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${styles.textContinueReading} ${isMuted.value && styles.hidden}`}>
         Keep scrolling to read the story
       </div>
-      <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted.value && styles.hidden}`}>
         This story is best<br />experienced with sound on
       </div>
 
@@ -221,7 +216,7 @@ const App = () => {
         id="toggle-global-audio-button"
         onClick={muteToggle}
         ref={muteEl}>
-        {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
+        {isMuted.value ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 
       <div className={styles.audioFloatContainer}>
@@ -229,7 +224,7 @@ const App = () => {
           id="toggle-global-audio-float"
           className={`${styles.audioFloat} ${!showButton && styles.hidden}`}
           onClick={muteToggle}>
-          {isMuted ? <img src={mute} /> : <img src={unmute} />}
+          {isMuted.value ? <img src={mute} /> : <img src={unmute} />}
         </button>
       </div>
     </div>
