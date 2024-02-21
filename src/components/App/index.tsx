@@ -154,7 +154,7 @@ const App = () => {
 
     // Add video players to our intersectionObserver
     videos.forEach(video => {
-      const isOdysseyBlockVideo = video.parentNode.classList.contains('Block-media');
+      const isOdysseyBlockVideo = video.matches('.Block-media *');
       if (isOdysseyBlockVideo) {
         // Odyssey block videos all appear at once, stacked on each other. This confuses the intersection observer.
         // So let's use the mutation observer to check which video has the playing class.
