@@ -112,13 +112,6 @@ export const fadeOutVideoEl = videoPlayer => {
         // Stop the setInterval when 0 is reached
         pauseVideo(videoPlayer);
         clearInterval(intervalId);
-
-        // After a long while not playing we unload the vids
-        videoEl.unloaderId = setTimeout(() => {
-          videoEl.dataset.src = videoEl.src;
-          videoEl.removeAttribute("src"); // empty source
-          videoEl.load();
-        }, SECONDS_BEFORE_UNLOAD * 1000);
       }
     }, interval);
   }
