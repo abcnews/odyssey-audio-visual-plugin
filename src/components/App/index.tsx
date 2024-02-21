@@ -8,11 +8,14 @@ import airpodsInverted from "./airpods-inverted.svg";
 import mute from "./volume-mute.svg";
 import unmute from "./volume.svg";
 
-// This has to be 0.0 for now (don't ask questions)
+/** This has to be 0.0 for now (don't ask questions) */
 const OBSERVATION_RATIO = 0.0;
 
-// Controls proportion of screen to cut observer margin
+/** Controls proportion of screen to cut observer margin */
 const OBSERVATION_MARGIN_RATIO = 0.35;
+
+/** Class name for currently active Odyssey block media */
+const CLASS_ACTIVE = 'play-active';
 
 /**
  * Supported video types.
@@ -34,9 +37,6 @@ const intersectionObserverCallback = (entries, observer) => {
     }
   });
 };
-
-/** Class name for currently active block media */
-const CLASS_ACTIVE = 'play-active';
 /**
  * When an Odyssey contains multiple videos in blocks, intended to crossfade
  * between them, only the first video is observed, because the rest are
@@ -61,7 +61,6 @@ const mutationObserverCallback = (mutationList) => {
     }
   });
 }
-
 
 const App = () => {
   const [isMuted, _setIsMuted] = useState(true); // Start muted
@@ -90,6 +89,13 @@ const App = () => {
     scanForVideos().forEach(video => {
       setMuted(video, !isMuted);
     });
+
+    // Fade in the currently on-screen Odyssey video, otherwise it will be
+    // unmuted with a volume of 0
+    const activeVideo = document.querySelector(`.${CLASS_ACTIVE}`);
+    if (activeVideo) {
+      fadeInVideoEl(activeVideo);
+    }
 
     setIsMuted(!isMuted);
   };
@@ -149,7 +155,7 @@ const App = () => {
     // Add video players to our intersectionObserver
     videos.forEach(video => {
       const isOdysseyBlockVideo = video.parentNode.classList.contains('Block-media');
-      if (!isOdysseyBlockVideo) {
+      if (isOdysseyBlockVideo) {
         // Odyssey block videos all appear at once, stacked on each other. This confuses the intersection observer.
         // So let's use the mutation observer to check which video has the playing class.
         mutationObserver.observe(video, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
