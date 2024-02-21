@@ -148,8 +148,15 @@ const App = () => {
 
     // Add video players to our intersectionObserver
     videos.forEach(video => {
-      intersectionObserver.observe(video.parentNode);
-      mutationObserver.observe(video, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
+      const isOdysseyBlockVideo = video.parentNode.classList.contains('Block-media');
+      if (!isOdysseyBlockVideo) {
+        // Odyssey block videos all appear at once, stacked on each other. This confuses the intersection observer.
+        // So let's use the mutation observer to check which video has the playing class.
+        mutationObserver.observe(video, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
+      } else
+        // Regular videos play when they intersect with the viewport.
+        intersectionObserver.observe(video.parentNode);
+
 
       // Initially set videos to muted, in case not ambient
       // And pause
