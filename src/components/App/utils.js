@@ -42,6 +42,11 @@ export const getVideoEl = (video) => {
 }
 
 export function setMuted(video, isMuted) {
+  if (getIsMuted(video) === isMuted) {
+    // Don't change the muted status if it's already set.
+    // This helps with videos being erroneously paused on page load.
+    return;
+  }
   if (video.api) {
     video.api.setMuted(isMuted);
   } else {
@@ -97,7 +102,7 @@ export const fadeOutVideoEl = videoPlayer => {
     let vol = videoEl.volume;
     const interval = 200;
 
-    videoEl.fadeOutIntervalId = setInterval(function () {
+    const intervalId = setInterval(function () {
       // Reduce volume as long as it is above 0
       if (vol > 0) {
         vol -= 0.1;
@@ -106,7 +111,7 @@ export const fadeOutVideoEl = videoPlayer => {
       } else {
         // Stop the setInterval when 0 is reached
         pauseVideo(videoPlayer);
-        clearInterval(videoEl.fadeOutIntervalId);
+        clearInterval(intervalId);
 
         // After a long while not playing we unload the vids
         videoEl.unloaderId = setTimeout(() => {
