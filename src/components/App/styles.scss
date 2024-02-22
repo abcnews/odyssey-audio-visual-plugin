@@ -51,6 +51,14 @@
   }
 }
 
+.audioplayer {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 10px;
+  height: 10px;
+}
+
 .audio-float-container {
   position: fixed;
   bottom: 15px;

@@ -1,18 +1,22 @@
 import { h } from 'preact';
 import { useState, useEffect, useRef } from 'preact/hooks';
-import { setMuted, getIsMuted, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
-
+import { setMuted, getIsMuted, pauseVideo, getVideoEl, fadeInVideoEl, fadeOutVideoEl } from './utils.js'
+import { isMuted } from './state.js';
 import styles from "./styles.scss";
 import airpods from "./airpods.svg";
 import airpodsInverted from "./airpods-inverted.svg";
 import mute from "./volume-mute.svg";
 import unmute from "./volume.svg";
+import blingSrc from './bling.mp3'
 
-// This has to be 0.0 for now (don't ask questions)
+/** This has to be 0.0 for now (don't ask questions) */
 const OBSERVATION_RATIO = 0.0;
 
-// Controls proportion of screen to cut observer margin
+/** Controls proportion of screen to cut observer margin */
 const OBSERVATION_MARGIN_RATIO = 0.35;
+
+/** Class name for currently active Odyssey block media */
+const CLASS_ACTIVE = 'play-active';
 
 /**
  * Supported video types.
@@ -22,7 +26,7 @@ const OBSERVATION_MARGIN_RATIO = 0.35;
 const VIDEO_PLAYER_QUERY_SELECTOR = ".VideoPlayer,.oavp-video video";
 
 // This is done when element observed
-const observerCallback = (entries, observer) => {
+const intersectionObserverCallback = (entries, observer) => {
   entries.forEach(entry => {
     const videoPlayer = entry.target.querySelector(VIDEO_PLAYER_QUERY_SELECTOR);
     if (!videoPlayer) return;
@@ -34,18 +38,38 @@ const observerCallback = (entries, observer) => {
     }
   });
 };
+/**
+ * When an Odyssey contains multiple videos in blocks, intended to crossfade
+ * between them, only the first video is observed, because the rest are
+ * on-screen but invisible.
+ *
+ * Instead we check whether they're visible using a mutation observer on the
+ * class property.
+ */
+const mutationObserverCallback = (mutationList) => {
+  mutationList.forEach(({ target, oldValue }) => {
+    const isActive = target.classList.contains(CLASS_ACTIVE);
+    const wasActive = oldValue.includes(CLASS_ACTIVE);
 
+    // fade this vid in
+    if (isActive && !wasActive) {
+      return fadeInVideoEl(target);
+    }
+
+    // Fade this vid out
+    if (!isActive && wasActive) {
+      return fadeOutVideoEl(target);
+    }
+  });
+}
 
 const App = () => {
-  const [isMuted, _setIsMuted] = useState(true); // Start muted
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState<any[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const audioPlayer = useRef();
 
   const muteEl = useRef<any>(null);
-
-  // Used to access state in eventListeners
-  const stateRef = useRef(isMuted);
 
   /** find and return compatible videos + update observers */
   const scanForVideos = () => {
@@ -54,17 +78,30 @@ const App = () => {
     return nodeList;
   }
 
-  const setIsMuted = data => {
-    stateRef.current = data;
-    _setIsMuted(data);
-  };
 
-  const muteToggle = event => {
-    scanForVideos().forEach(video => {
-      setMuted(video, !isMuted);
-    });
+  const muteToggle = () => {
+    const isMutedNow = !isMuted.value;
 
-    setIsMuted(!isMuted);
+    if (isMutedNow) {
+      scanForVideos().forEach(video => {
+        setMuted(video, isMutedNow);
+      });
+    }
+
+    // Fade in the currently on-screen Odyssey video, otherwise it will be
+    // unmuted with a volume of 0
+    const activeVideo = document.querySelector(`.${CLASS_ACTIVE}`);
+
+    if (activeVideo) {
+      fadeInVideoEl(activeVideo);
+    }
+
+    isMuted.value = isMutedNow;
+
+    if (!isMutedNow) {
+      // @ts-ignore
+      audioPlayer.current.play();
+    }
   };
 
   // Init effect run on mount
@@ -109,15 +146,27 @@ const App = () => {
 
     if (typeof videos === "undefined") return;
 
-    const observer = new IntersectionObserver(observerCallback, {
+    // observe when videos scroll onto the screen
+    const intersectionObserver = new IntersectionObserver(intersectionObserverCallback, {
       root: null,
       rootMargin: `-${window.innerHeight * OBSERVATION_MARGIN_RATIO}px 0px`,
       threshold: OBSERVATION_RATIO
     });
 
-    // Add video players to our observer
+    // observe for when videos are crossfaded in
+    const mutationObserver = new MutationObserver(mutationObserverCallback);
+
+    // Add video players to our intersectionObserver
     videos.forEach(video => {
-      observer.observe(video.parentNode);
+      const isOdysseyBlockVideo = video.matches('.Block-media *');
+      if (isOdysseyBlockVideo) {
+        // Odyssey block videos all appear at once, stacked on each other. This confuses the intersection observer.
+        // So let's use the mutation observer to check which video has the playing class.
+        mutationObserver.observe(video, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
+      } else
+        // Regular videos play when they intersect with the viewport.
+        intersectionObserver.observe(video.parentNode);
+
 
       // Initially set videos to muted, in case not ambient
       // And pause
@@ -125,9 +174,7 @@ const App = () => {
 
       // Set volume to zero so we can fade in
       getVideoEl(video).volume = 0.0;
-
-      // Also set preload to auto to help playback
-      // DON'T DO THIS OR BAD THINGS WILL HAPPEN ON MOBILE WITH LOTS OF VIDS
+      // Do not set preload on videos, otherwise mobile devices will try to pre-download the entire world.
       // videoEl.preload = "auto";
 
       // Trick non-ambient videos into playing more
@@ -137,7 +184,7 @@ const App = () => {
       }
 
       eventListener = () => {
-        setIsMuted(!stateRef.current);
+        isMuted.value = (!isMuted.value);
 
         videos.forEach(vid => {
           setMuted(vid, !getIsMuted(vid))
@@ -153,29 +200,21 @@ const App = () => {
     return () => {
       if (videoMuteButton) videoMuteButton.removeEventListener("click", eventListener);
 
-      videos.forEach(video => {
-        try {
-          observer.unobserve(video);
-        } catch (e) {
-          // Sometimes videos disappear before we can unobserve them, especially
-          // during development
-        }
-      });
-
-      observer.disconnect();
+      intersectionObserver.disconnect();
+      mutationObserver.disconnect();
     };
   }, [videos]);
 
   return (
-    <div data-id="odyssey-audio-visual-plugin" className={styles.root} data-muted={isMuted}>
-      <div className={`${styles.icon}  ${!isMuted && styles.hidden}`}>
+    <div data-id="odyssey-audio-visual-plugin" className={styles.root} data-muted={isMuted.value}>
+      <div className={`${styles.icon}  ${!isMuted.value && styles.hidden}`}>
         {isDarkMode ? <img src={airpodsInverted} /> : <img src={airpods} />}
       </div>
 
-      <div className={`${styles.text} ${styles.textContinueReading} ${isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${styles.textContinueReading} ${isMuted.value && styles.hidden}`}>
         Keep scrolling to read the story
       </div>
-      <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted && styles.hidden}`}>
+      <div className={`${styles.text} ${styles.textSoundOn} ${!isMuted.value && styles.hidden}`}>
         This story is best<br />experienced with sound on
       </div>
 
@@ -184,7 +223,7 @@ const App = () => {
         id="toggle-global-audio-button"
         onClick={muteToggle}
         ref={muteEl}>
-        {isMuted ? "ENABLE AUDIO" : "MUTE AUDIO"}
+        {isMuted.value ? "ENABLE AUDIO" : "MUTE AUDIO"}
       </button>
 
       <div className={styles.audioFloatContainer}>
@@ -192,9 +231,10 @@ const App = () => {
           id="toggle-global-audio-float"
           className={`${styles.audioFloat} ${!showButton && styles.hidden}`}
           onClick={muteToggle}>
-          {isMuted ? <img src={mute} /> : <img src={unmute} />}
+          {isMuted.value ? <img src={mute} /> : <img src={unmute} />}
         </button>
       </div>
+      <audio src={blingSrc} className={styles.audioplayer} ref={audioPlayer} />
     </div>
   );
 };
