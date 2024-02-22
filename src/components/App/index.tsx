@@ -7,6 +7,7 @@ import airpods from "./airpods.svg";
 import airpodsInverted from "./airpods-inverted.svg";
 import mute from "./volume-mute.svg";
 import unmute from "./volume.svg";
+import blingSrc from './bling.mp3'
 
 /** This has to be 0.0 for now (don't ask questions) */
 const OBSERVATION_RATIO = 0.0;
@@ -66,6 +67,7 @@ const App = () => {
   const [showButton, setShowButton] = useState(false); // Floating mute
   const [videos, setVideos] = useState<any[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const audioPlayer = useRef();
 
   const muteEl = useRef<any>(null);
 
@@ -95,6 +97,11 @@ const App = () => {
     }
 
     isMuted.value = isMutedNow;
+
+    if (!isMutedNow) {
+      // @ts-ignore
+      audioPlayer.current.play();
+    }
   };
 
   // Init effect run on mount
@@ -227,6 +234,7 @@ const App = () => {
           {isMuted.value ? <img src={mute} /> : <img src={unmute} />}
         </button>
       </div>
+      <audio src={blingSrc} className={styles.audioplayer} ref={audioPlayer} />
     </div>
   );
 };
